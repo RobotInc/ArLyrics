@@ -70,8 +70,8 @@ public class songAdapter extends RecyclerView.Adapter<songAdapter.MyViewHolder> 
         holder.name.setTypeface(title);
         holder.lyricist.setTypeface(lyricist);
 
-        //holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongName()));
-        holder.name.setText(actualsong.getSongName());
+        holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongName()));
+        //holder.name.setText(actualsong.getSongName());
 
         //holder.lyricist.setText(FirstLetterUpperCase.convert("Lyricist : " + actualsong.getLyricistNames()));
         holder.lyricist.setText("Lyricist : " + actualsong.getLyricistNames());
