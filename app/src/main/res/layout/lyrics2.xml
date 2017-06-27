@@ -161,7 +161,7 @@
                 android:layout_marginStart="2dp"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:secondaryProgressTint="#f8f00e"
+                android:secondaryProgressTint="#ffcfee"
                 android:padding="8dp"/>
 
             <TextView

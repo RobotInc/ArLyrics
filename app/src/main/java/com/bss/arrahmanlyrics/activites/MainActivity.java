@@ -105,8 +105,9 @@ public class MainActivity extends AppCompatActivity
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
         mFirebaseAuth = FirebaseAuth.getInstance();
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+        final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
+                .requestProfile()
                 .requestEmail()
                 .build();
 
@@ -114,7 +115,52 @@ public class MainActivity extends AppCompatActivity
                 .enableAutoManage(this /* FragmentActivity */, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        signIn();
+       /*mAuthListener = new FirebaseAuth.AuthStateListener(){
+
+           @Override
+           public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+               FirebaseUser user = firebaseAuth.getCurrentUser();
+               if(user == null){
+                   Toast.makeText(getApplicationContext(),"Plese Log In",Toast.LENGTH_SHORT).show();
+                   signIn();
+               }else if(user.getDisplayName()==null){
+                 signIn();
+
+                   Toast.makeText(getApplicationContext(),"singed in",Toast.LENGTH_SHORT).show();
+               }else {
+                   userName.setText(user.getDisplayName());
+                   Toast.makeText(getApplicationContext(), user.getDisplayName(), Toast.LENGTH_SHORT).show();
+                   userEmailId.setText(user.getEmail().toString());
+
+                   Log.i("image", user.getPhotoUrl().toString());
+                   Picasso.with(getApplicationContext())
+                           .load(user.getPhotoUrl())
+                           .transform(new RoundedTransformation(200, 0))
+                           .fit()
+                           .into(profileImage);
+               }
+           }
+       };*/
+
+       FirebaseUser user = mFirebaseAuth.getCurrentUser();
+        if(user == null){
+            signIn();
+        }else if(user.getDisplayName()==null){
+            signIn();
+
+            Toast.makeText(getApplicationContext(),"singed in",Toast.LENGTH_SHORT).show();
+        }else {
+            userName.setText(user.getDisplayName());
+            Toast.makeText(getApplicationContext(), user.getDisplayName(), Toast.LENGTH_SHORT).show();
+            userEmailId.setText(user.getEmail().toString());
+
+//            Log.i("image", user.getPhotoUrl().toString());
+            Picasso.with(getApplicationContext())
+                    .load(user.getPhotoUrl())
+                    .transform(new RoundedTransformation(200, 0))
+                    .fit()
+                    .into(profileImage);
+        }
     }
 
     @Override
@@ -166,9 +212,10 @@ public class MainActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_manage) {
 
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_log) {
+                mFirebaseAuth.signOut();
+                Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+                signIn();
 
         }
 
@@ -190,6 +237,9 @@ public class MainActivity extends AppCompatActivity
         if (requestCode == 1) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
+        }else {
+            Toast.makeText(getApplicationContext(),"App needs you to login to work smoothly open the app again and login with google account",Toast.LENGTH_LONG).show();
+            finish();
         }
     }
 
@@ -214,8 +264,9 @@ public class MainActivity extends AppCompatActivity
 
 
         } else {
-            // Signed out, show unauthenticated UI.
-            Toast.makeText(getApplicationContext(), "actual error " + result.getStatus().toString(), Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),"App needs you to login to work smoothly open the app again and login with google account",Toast.LENGTH_LONG).show();
+
+            finish();
         }
     }
 
@@ -237,8 +288,9 @@ public class MainActivity extends AppCompatActivity
                         FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
                         if (!task.isSuccessful()) {
                             Log.w("Sign in", "signInWithCredential", task.getException());
-                            Toast.makeText(MainActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "Authentication failed. Please Check your Internet Connection and Open the app again...",
+                                    Toast.LENGTH_LONG).show();
+                            finish();
                         }
                         // ...
                     }
@@ -295,5 +347,19 @@ public class MainActivity extends AppCompatActivity
     }
 
 
+  /*  @Override
+    public void onStart() {
+        super.onStart();
+        mFirebaseAuth.addAuthStateListener(mAuthListener);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mFirebaseAuth.removeAuthStateListener(mAuthListener);
+        }
+    }
+*/
 
 }
