@@ -8,24 +8,28 @@ import android.util.Log;
 
 public class FirstLetterUpperCase {
 
-    public static String convert(String source){
-        source = source.toLowerCase();
-        StringBuffer res = new StringBuffer();
+	public static String convert(String source) {
+		source = source.toLowerCase();
+		StringBuffer res = new StringBuffer();
 
-        String[] strArr = source.split(" ");
-        Log.e("string array",String.valueOf(strArr));
+		String[] strArr = source.split(" ");
+		Log.e("string array", source);
 
-        for (String str : strArr) {
-            char[] stringArray = str.trim().toCharArray();
-            if(stringArray[0] != ' ' && stringArray.length >0){
-                stringArray[0] = Character.toUpperCase(stringArray[0]);
-                str = new String(stringArray);
-            }
+		for (String str : strArr) {
+			char[] stringArray = str.trim().toCharArray();
+
+				if (stringArray.length > 0) {
+					if((int)stringArray[0] != 32) {
+						stringArray[0] = Character.toUpperCase(stringArray[0]);
+						str = new String(stringArray);
+					}
+				}
 
 
-            res.append(str).append(" ");
-        }
 
-        return  res.toString().trim();
-    }
+			res.append(str).append(" ");
+		}
+
+		return res.toString().trim();
+	}
 }

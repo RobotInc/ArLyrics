@@ -1,5 +1,6 @@
 package com.bss.arrahmanlyrics.activites;
 
+import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -166,16 +167,17 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			if (!songs.equals("IMAGE")) {
 				HashMap<String, Object> oneSong = (HashMap<String, Object>) values.get(songs);
 				songList.add(songs);
-				Log.i("data source",String.valueOf(oneSong.get("Download")));
+				Log.i("data source", String.valueOf(oneSong.get("Download")));
 				links.put(songs, String.valueOf(oneSong.get("Download")));
 			}
 
 		}
 
 		mainApp.getPlayer().setPlayList(links);
-		mainApp.getPlayer().setPlay(getIntent().getExtras().getString("SongTitle"),bar,totalDur);
+		mainApp.getPlayer().setPlay(getIntent().getExtras().getString("SongTitle"), bar, totalDur,lyricsActivity.this);
+
 		play.setImageResource(R.drawable.ic_action_pause);
-		Log.e("duration",String.valueOf(mainApp.getPlayer().getDuration()));
+		Log.e("duration", String.valueOf(mainApp.getPlayer().getDuration()));
 		bar.setMax((int) mainApp.getPlayer().getDuration());
 		bar.setProgress(mainApp.getPlayer().getCurrentPosition());
 		totalDur.setText(String.format("%d : %d ",
@@ -219,7 +221,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	@Override
 	public void onBackPressed() {
 		super.onBackPressed();
-		if(mainApp.getPlayer().isPlaying()){
+		if (mainApp.getPlayer().isPlaying()) {
 			mainApp.getPlayer().stop();
 		}
 		overridePendingTransition(R.anim.slide_in_up, R.anim.fade_forward);
@@ -376,7 +378,6 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 
 		}
 	};
-
 
 
 }
