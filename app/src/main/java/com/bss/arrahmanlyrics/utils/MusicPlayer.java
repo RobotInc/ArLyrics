@@ -188,34 +188,17 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 		int totalSongs = ulrs.size();
 		if (totalSongs > 0 && songIndex < totalSongs - 1) {
-			Random r = new Random();
-			int rIndex = songIndex;
-			if (shuffle) {
-				do {
-					rIndex = r.nextInt(totalSongs - 1);
-				} while (songIndex == rIndex);
-			} else {
-				rIndex += 1;
-			}
-			songUlr song = ulrs.get(rIndex);
+			songUlr song = ulrs.get(songIndex + 1);
 			changeSong(song.getUrl(), song.getSongTitle());
-			songIndex = rIndex;
+			songIndex++;
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 		} else if (songIndex == totalSongs - 1) {
-			Random r = new Random();
-			int rIndex = songIndex;
-			if (shuffle) {
-				do {
-					rIndex = r.nextInt(totalSongs - 1);
-				}while (songIndex == rIndex);
-			}else {
-				 rIndex = 0;
-			}
-			songUlr song = ulrs.get(rIndex);
+
+			songUlr song = ulrs.get(0);
 			changeSong(song.getUrl(), song.getSongTitle());
-			songIndex = rIndex;
+			songIndex = 0;
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -258,7 +241,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 		}
 
-		int totalSongs = ulrs.size();
+/*		int totalSongs = ulrs.size();
 		if (totalSongs > 0 && songIndex > 0) {
 			Random r = new Random();
 			int rIndex = songIndex;
@@ -291,7 +274,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
-		}
+		}*/
 
 	}
 
