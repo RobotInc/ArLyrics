@@ -36,7 +36,7 @@ public class OtherLyrics extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     DatabaseReference songRef;
     HashMap<String, Object> selectedSong;
-    TextView lyricsText;
+    public TextView lyricsText;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -81,22 +81,6 @@ public class OtherLyrics extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_other_lyrics,container,false);
         lyricsText = (TextView) view.findViewById(R.id.lyricsOthers) ;
-        songRef = FirebaseDatabase.getInstance().getReference();
-        songRef.child("AR Rahman").child("Tamil").child(getActivity().getIntent().getExtras().getString("Title")).child(getActivity().getIntent().getExtras().getString("SongTitle")).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                selectedSong = (HashMap<String, Object>) dataSnapshot.getValue();
-                Log.i("Selected Song", String.valueOf(selectedSong));
-                setLyrics();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
         return view;
     }
 
@@ -130,15 +114,5 @@ public class OtherLyrics extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    private void setLyrics() {
 
-        final StringBuilder builderOther = new StringBuilder();
-        builderOther.append(selectedSong.get("Others"));
-        builderOther.append(selectedSong.get("OthersOne"));
-
-        Typeface tamil = Typeface.createFromAsset(getActivity().getAssets(),"english.ttf");
-
-        lyricsText.setText(String.valueOf(builderOther));
-        lyricsText.setTypeface(tamil);
-    }
 }

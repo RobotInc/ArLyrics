@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Handler;
@@ -30,6 +31,7 @@ import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.slideSong;
+import com.bss.arrahmanlyrics.models.songUlr;
 import com.bss.arrahmanlyrics.utils.ArtworkUtils;
 import com.bss.arrahmanlyrics.utils.MusicPlayer;
 import com.bss.arrahmanlyrics.utils.PlayPauseView;
@@ -57,9 +59,14 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	HashMap<String, Object> values;
 	HashMap<String, String> links;
 	SectionsPagerAdapter section;
-	private ImageView play, next, prev, shuffle;
+	private ImageView play, next, prev, shuffle,repeat;
 	private SeekBar bar;
 	TextView currentDur, totalDur;
+	String movieName,songTitle;
+	EnglishLyrics enLyrics;
+	OtherLyrics oLyrics;
+	HashMap<String,Object> manualSong;
+
 	//MusicPlayer mainApp.getPlayer();
 
 	private Handler myHandler = new Handler();
@@ -74,24 +81,30 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		lyricsPager = (ViewPager) findViewById(R.id.lyricsPager);
 		//slidingpanel = (SlidingPaneLayout) findViewById(R.id.slidingpanelayout);
 		//songlistView = (RecyclerView) findViewById(R.id.fastsonglist);
+		enLyrics = new EnglishLyrics();
+		oLyrics = new OtherLyrics();
 		section = new SectionsPagerAdapter(getSupportFragmentManager());
 		section.addFragment(new songList(), "Song List");
-		section.addFragment(new EnglishLyrics(), "English Lyrics");
-		section.addFragment(new OtherLyrics(), "Other Lyrics");
+		section.addFragment(enLyrics, "English Lyrics");
+		section.addFragment(oLyrics, "Other Lyrics");
 		songList = new ArrayList<>();
+
 		values = new HashMap<>();
 		lyricsPager.setAdapter(section);
 		lyricsPager.setCurrentItem(1);
+		lyricsPager.setOffscreenPageLimit(2);
 		//if (!slidingpanel.isOpen()) {
 		//     slidingpanel.closePane();
 		//  } else {
 		//      slidingpanel.openPane();
 		//  }
-
+		movieName = getIntent().getExtras().getString("Title");
+		songTitle = getIntent().getExtras().getString("SongTitle");
 		play = (ImageView) findViewById(R.id.playPause);
 		next = (ImageView) findViewById(R.id.forward);
 		prev = (ImageView) findViewById(R.id.backward);
 		shuffle = (ImageView) findViewById(R.id.shuffle_song);
+		repeat = (ImageView) findViewById(R.id.repeat_song);
 		play.setOnClickListener(this);
 		next.setOnClickListener(this);
 		prev.setOnClickListener(this);
@@ -162,21 +175,28 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	}
 
 	private void preparePlaylist() {
+		List<songUlr> ulrs = new ArrayList<>();
 		songList.clear();
+		SortedSet<String> sorted = new TreeSet<>();
 		for (String songs : values.keySet()) {
 			if (!songs.equals("IMAGE")) {
-				HashMap<String, Object> oneSong = (HashMap<String, Object>) values.get(songs);
 				songList.add(songs);
-				Log.i("data source", String.valueOf(oneSong.get("Download")));
-				links.put(songs, String.valueOf(oneSong.get("Download")));
+				sorted.add(songs);
 			}
 
 		}
 
-		mainApp.getPlayer().setPlayList(links);
-		mainApp.getPlayer().setPlay(getIntent().getExtras().getString("SongTitle"), bar, totalDur,lyricsActivity.this);
+		for(String sortedName:sorted){
+			HashMap<String, Object> oneSong = (HashMap<String, Object>) values.get(sortedName);
+			songUlr url = new songUlr(sortedName,String.valueOf(oneSong.get("Download")));
+			ulrs.add(url);
+		}
 
-		play.setImageResource(R.drawable.ic_action_pause);
+		mainApp.getPlayer().setPlayList(ulrs);
+		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,enLyrics,oLyrics);
+		setLyricsManually(movieName,songTitle);
+
+		//play.setImageResource(R.drawable.ic_action_pause);
 		Log.e("duration", String.valueOf(mainApp.getPlayer().getDuration()));
 		bar.setMax((int) mainApp.getPlayer().getDuration());
 		bar.setProgress(mainApp.getPlayer().getCurrentPosition());
@@ -298,12 +318,22 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	public void onClick(View v) {
 		switch (v.getId()) {
 			case R.id.playPause: {
+				if(mainApp.getPlayer().isPlaying()){
+					mainApp.getPlayer().pause();
+					play.setImageResource(R.drawable.ic_action_play);
+				}else {
+					mainApp.getPlayer().resume();
+					play.setImageResource(R.drawable.ic_action_pause);
+				}
+
 				break;
 			}
 			case R.id.backward: {
+				mainApp.getPlayer().previous();
 				break;
 			}
 			case R.id.forward: {
+				mainApp.getPlayer().next();
 				break;
 			}
 			case R.id.shuffle_song: {
@@ -378,6 +408,46 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 
 		}
 	};
+	public void setLyricsManually(String albumname,String songTitle){
+		DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+		ref.child("AR Rahman").child("Tamil").child(albumname).child(songTitle).addValueEventListener(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot dataSnapshot) {
 
+				manualSong = (HashMap<String, Object>) dataSnapshot.getValue();
+				Log.i("Selected Song", String.valueOf(manualSong));
+				setLyrics(manualSong);
+
+			}
+
+			@Override
+			public void onCancelled(DatabaseError databaseError) {
+				Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+			}
+		});
+
+	}
+
+	void setLyrics(HashMap<String,Object> manualSong){
+
+		final StringBuilder builderEnglish = new StringBuilder();
+		builderEnglish.append(manualSong.get("English"));
+		builderEnglish.append(manualSong.get("EnglishOne"));
+
+		Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(),"english.ttf");
+
+		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
+		enLyrics.lyricsText.setTypeface(english);
+
+		final StringBuilder builderOther = new StringBuilder();
+		builderOther.append(manualSong.get("Others"));
+		builderOther.append(manualSong.get("OthersOne"));
+
+		Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(),"english.ttf");
+
+		oLyrics.lyricsText.setText(String.valueOf(builderOther));
+		oLyrics.lyricsText.setTypeface(tamil);
+
+	}
 
 }

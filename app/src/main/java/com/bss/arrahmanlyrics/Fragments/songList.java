@@ -143,12 +143,12 @@ public class songList extends Fragment {
 
                 slideSong newSong = new slideSong(songs, oneSong.get("Track NO").toString(), oneSong.get("Lyricist").toString(),image);
                 list.add(newSong);
-                trackNos.add((String.valueOf(oneSong.get("Track NO"))));
+                trackNos.add(songs);
             }
         }
         for (String Track : trackNos) {
             for (slideSong songNo : list) {
-                if (songNo.getTrackNo().equals(Track)) {
+                if (songNo.getSongName().equals(Track)) {
                     songsListArray.add(songNo);
                 }
             }

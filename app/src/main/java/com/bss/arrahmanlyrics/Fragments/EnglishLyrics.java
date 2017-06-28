@@ -36,12 +36,15 @@ public class EnglishLyrics extends Fragment {
     private static final String ARG_PARAM2 = "param2";
     DatabaseReference songRef;
     HashMap<String, Object> selectedSong;
-    TextView lyricsText;
+    public TextView lyricsText;
     TextView song_title,album_title;
+    DatabaseReference ref;
 
+    HashMap<String,Object> manualSong;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
 
     private OnFragmentInteractionListener mListener;
 
@@ -82,27 +85,11 @@ public class EnglishLyrics extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_english_lyrics,container,false);
         lyricsText = (TextView) view.findViewById(R.id.lyricsEnglish) ;
-        songRef = FirebaseDatabase.getInstance().getReference();
         song_title = (TextView) getActivity().findViewById(R.id.song_title);
         album_title = (TextView) getActivity().findViewById(R.id.album_title);
         song_title.setText(getActivity().getIntent().getExtras().getString("SongTitle"));
         album_title.setText(getActivity().getIntent().getExtras().getString("Title"));
 
-        songRef.child("AR Rahman").child("Tamil").child(getActivity().getIntent().getExtras().getString("Title")).child(getActivity().getIntent().getExtras().getString("SongTitle")).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                selectedSong = (HashMap<String, Object>) dataSnapshot.getValue();
-                Log.i("Selected Song", String.valueOf(selectedSong));
-                setLyrics();
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        });
         return view;
     }
 
@@ -135,15 +122,6 @@ public class EnglishLyrics extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
-    private void setLyrics() {
-        final StringBuilder builderEnglish = new StringBuilder();
-        builderEnglish.append(selectedSong.get("English"));
-        builderEnglish.append(selectedSong.get("EnglishOne"));
 
-        Typeface english = Typeface.createFromAsset(getActivity().getAssets(),"english.ttf");
-
-        lyricsText.setText(String.valueOf(builderEnglish));
-        lyricsText.setTypeface(english);
-    }
 
 }

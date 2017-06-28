@@ -39,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:gravity="center_vertical"
+            android:gravity="center_horizontal"
             android:orientation="horizontal"
             android:paddingBottom="10dp"
             android:paddingTop="10dp">
@@ -50,8 +50,8 @@
                 android:layout_height="wrap_content"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@null"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
+               android:paddingLeft="2dp"
+                android:paddingRight="0dp"
                 android:src="@drawable/ic_action_favorite"/>
 
             <LinearLayout
@@ -70,9 +70,9 @@
                     android:maxLines="1"
                     android:paddingEnd="4dp"
                     android:paddingStart="4dp"
-                    android:text="Sonu Nigam"
+                    android:text="Album Title"
                     android:textColor="#FFFFFF"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"/>
 
                 <TextView
@@ -86,9 +86,9 @@
                     android:paddingEnd="4dp"
                     android:paddingStart="4dp"
                     android:paddingTop="4dp"
-                    android:text="Agneepath"
+                    android:text="Song Title"
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp"/>
+                    android:textSize="14sp"/>
 
             </LinearLayout>
 
@@ -98,8 +98,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
                 android:background="@drawable/ripple"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
+                android:paddingLeft="0dp"
+                android:paddingRight="2dp"
                 android:tint="@android:color/white"
                 app:srcCompat="@drawable/ic_menu"/>
 

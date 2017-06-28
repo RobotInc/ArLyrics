@@ -2,20 +2,36 @@ package com.bss.arrahmanlyrics.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bss.arrahmanlyrics.Fragments.EnglishLyrics;
+import com.bss.arrahmanlyrics.Fragments.OtherLyrics;
+import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
+import com.bss.arrahmanlyrics.models.songUlr;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,16 +41,25 @@ import java.util.concurrent.TimeUnit;
 public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
 
 	MediaPlayer player;
-	HashMap<String, String> list;
+	List<songUlr> ulrs;
+	int songIndex = 0;
+	//HashMap<String, String> list;
 	Context context;
 	String currentPlayingSong;
+	HashMap<String, Object> manualSong;
+	String Movie;
 	SeekBar bar;
 	TextView totalDur;
 	TelephonyManager tm;
 	AudioManager audioManager;
 	PhoneStateListener phoneStateListener;
 	ProgressDialog dialog;
+	ArrayList playedList = new ArrayList();
+	ImageView playButton;
 	int resumePosition;
+	boolean shuffle = true, repeat = false;
+	EnglishLyrics enLyrics;
+	OtherLyrics oLyrics;
 	private boolean ongoingCall = false;
 
 
@@ -91,27 +116,42 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		play();
+		playButton.setImageResource(R.drawable.ic_action_pause);
 		dialog.hide();
 
 	}
 
-	public void setPlayList(HashMap<String, String> list) {
-		this.list = list;
+	public void setPlayList(List<songUlr> ulr) {
+		this.ulrs = ulr;
+
 	}
 
-	public void setPlay(String name, SeekBar bar, TextView totalDur,Context presetContext) {
+	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, EnglishLyrics enLyrics, OtherLyrics oLyrics) {
+		String download = "";
+		this.playButton = playButton;
+		for (songUlr ulr : ulrs) {
+			if (ulr.getSongTitle().equals(name)) {
+				download = ulr.getUrl();
+				songIndex = ulrs.indexOf(ulr);
+			}
+		}
+		this.enLyrics = enLyrics;
 		this.bar = bar;
 		this.totalDur = totalDur;
+		this.Movie = moiveName;
+		this.oLyrics = oLyrics;
+
 		try {
 			player.reset();
-			player.setDataSource(String.valueOf(list.get(name)));
+			player.setDataSource(download);
 			currentPlayingSong = name;
+			context = presetContext;
 			dialog = new ProgressDialog(presetContext);
 			dialog.setMessage("Loading Song From database...");
 			dialog.show();
 			player.prepareAsync();
 		} catch (IOException e) {
-			Log.e("error source", String.valueOf(list.get(name)));
+			//Log.e("error source", String.valueOf(download);
 			Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -146,9 +186,112 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	public void next() {
 
+		int totalSongs = ulrs.size();
+		if (totalSongs > 0 && songIndex < totalSongs - 1) {
+			Random r = new Random();
+			int rIndex = songIndex;
+			if (shuffle) {
+				do {
+					rIndex = r.nextInt(totalSongs - 1);
+				} while (songIndex == rIndex);
+			} else {
+				rIndex += 1;
+			}
+			songUlr song = ulrs.get(rIndex);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex = rIndex;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		} else if (songIndex == totalSongs - 1) {
+			Random r = new Random();
+			int rIndex = songIndex;
+			if (shuffle) {
+				do {
+					rIndex = r.nextInt(totalSongs - 1);
+				}while (songIndex == rIndex);
+			}else {
+				 rIndex = 0;
+			}
+			songUlr song = ulrs.get(rIndex);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex = rIndex;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		}
+
+	}
+
+	private void changeSong(String download, String name) {
+		try {
+			player.reset();
+			player.setDataSource(download);
+			currentPlayingSong = name;
+			dialog = new ProgressDialog(context);
+			dialog.setMessage("Loading Song From database...");
+			dialog.show();
+			player.prepareAsync();
+		} catch (IOException e) {
+			//Log.e("error source", String.valueOf(download);
+			Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+		}
+
 	}
 
 	public void previous() {
+		int totalSongs = ulrs.size();
+		if (totalSongs > 0 && songIndex > 0) {
+			songUlr song = ulrs.get(songIndex - 1);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex--;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+
+		} else if (songIndex == 0) {
+			songUlr song = ulrs.get(totalSongs - 1);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex = totalSongs - 1;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		}
+
+		int totalSongs = ulrs.size();
+		if (totalSongs > 0 && songIndex > 0) {
+			Random r = new Random();
+			int rIndex = songIndex;
+			if (shuffle) {
+				do {
+					rIndex = r.nextInt(totalSongs - 1);
+				} while (songIndex == rIndex);
+			} else {
+				rIndex += 1;
+			}
+			songUlr song = ulrs.get(rIndex);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex = rIndex;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		} else if (songIndex == totalSongs - 1) {
+			Random r = new Random();
+			int rIndex = songIndex;
+			if (shuffle) {
+				do {
+					rIndex = r.nextInt(totalSongs - 1);
+				}while (songIndex == rIndex);
+			}else {
+				rIndex = 0;
+			}
+			songUlr song = ulrs.get(rIndex);
+			changeSong(song.getUrl(), song.getSongTitle());
+			songIndex = rIndex;
+			setLyricsManually(Movie, song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		}
 
 	}
 
@@ -160,6 +303,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void shuffle() {
+		if (shuffle) {
+			shuffle = false;
+		} else {
+			shuffle = true;
+		}
 
 	}
 
@@ -189,31 +337,31 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	@Override
 	public void onAudioFocusChange(int focusChange) {
 
-        //Invoked when the audio focus of the system is updated.
-        switch (focusChange) {
-            case AudioManager.AUDIOFOCUS_GAIN:
-                // resume playback
-                if (!player.isPlaying()) player.start();
-                player.setVolume(1.0f, 1.0f);
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS:
-                // Lost focus for an unbounded amount of time: stop playback and release media player
-                if (player.isPlaying()) player.stop();
-                player.release();
-                player = null;
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                // Lost focus for a short time, but we have to stop
-                // playback. We don't release the media player because playback
-                // is likely to resume
-                if (player.isPlaying()) player.pause();
-                break;
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                // Lost focus for a short time, but it's ok to keep playing
-                // at an attenuated level
-                if (player.isPlaying()) player.setVolume(0.1f, 0.1f);
-                break;
-        }
+		//Invoked when the audio focus of the system is updated.
+		switch (focusChange) {
+			case AudioManager.AUDIOFOCUS_GAIN:
+				// resume playback
+				if (!player.isPlaying()) player.start();
+				player.setVolume(1.0f, 1.0f);
+				break;
+			case AudioManager.AUDIOFOCUS_LOSS:
+				// Lost focus for an unbounded amount of time: stop playback and release media player
+				if (player.isPlaying()) player.stop();
+				player.release();
+				player = null;
+				break;
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+				// Lost focus for a short time, but we have to stop
+				// playback. We don't release the media player because playback
+				// is likely to resume
+				if (player.isPlaying()) player.pause();
+				break;
+			case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+				// Lost focus for a short time, but it's ok to keep playing
+				// at an attenuated level
+				if (player.isPlaying()) player.setVolume(0.1f, 0.1f);
+				break;
+		}
 
 	}
 
@@ -252,12 +400,54 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 				PhoneStateListener.LISTEN_CALL_STATE);
 	}
 
-	public void stopListener(){
-		 removeAudioFocus();
-        //Disable the PhoneStateListener
-        if (phoneStateListener != null) {
-            tm.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
-        }
+	public void stopListener() {
+		removeAudioFocus();
+		//Disable the PhoneStateListener
+		if (phoneStateListener != null) {
+			tm.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE);
+		}
 	}
 
+
+	public void setLyricsManually(String albumname, String songTitle) {
+		DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
+		ref.child("AR Rahman").child("Tamil").child(albumname).child(songTitle).addValueEventListener(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot dataSnapshot) {
+
+				manualSong = (HashMap<String, Object>) dataSnapshot.getValue();
+				Log.i("Selected Song", String.valueOf(manualSong));
+				setLyrics(manualSong);
+
+			}
+
+			@Override
+			public void onCancelled(DatabaseError databaseError) {
+				Toast.makeText(context, databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+			}
+		});
+
+	}
+
+	void setLyrics(HashMap<String, Object> manualSong) {
+
+		final StringBuilder builderEnglish = new StringBuilder();
+		builderEnglish.append(manualSong.get("English"));
+		builderEnglish.append(manualSong.get("EnglishOne"));
+
+		Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(), "english.ttf");
+
+		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
+		enLyrics.lyricsText.setTypeface(english);
+
+		final StringBuilder builderOther = new StringBuilder();
+		builderOther.append(manualSong.get("Others"));
+		builderOther.append(manualSong.get("OthersOne"));
+
+		Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(), "english.ttf");
+
+		oLyrics.lyricsText.setText(String.valueOf(builderOther));
+		oLyrics.lyricsText.setTypeface(tamil);
+
+	}
 }
