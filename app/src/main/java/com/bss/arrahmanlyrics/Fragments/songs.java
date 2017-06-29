@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.adapter.fragmentSongAdapter;
+import com.bss.arrahmanlyrics.adapter.mainFragmentSongAdapter;
 import com.bss.arrahmanlyrics.models.slideSong;
 import com.bss.arrahmanlyrics.utils.CustomLayoutManager;
 import com.bss.arrahmanlyrics.utils.DividerItemDecoration;
@@ -53,7 +54,7 @@ public class songs extends Fragment {
 	List<slideSong> songlist;
 	HashMap<String, Object> values;
 	DatabaseReference songref;
-	fragmentSongAdapter adapter;
+	mainFragmentSongAdapter adapter;
 	ProgressDialog dialog;
 
 	private OnFragmentInteractionListener mListener;
@@ -99,14 +100,14 @@ public class songs extends Fragment {
 		dialog.setMessage("Loading Album");
 		dialog.show();
 		songlist = new ArrayList<>();
-		adapter = new fragmentSongAdapter(getContext(), songlist);
+		adapter = new mainFragmentSongAdapter(getContext(), songlist);
 		songlistView = (FastScrollRecyclerView) rootView.findViewById(R.id.songPlayList);
 		songlistView.setAdapter(adapter);
 		final CustomLayoutManager customLayoutManager = new CustomLayoutManager(getContext());
 		customLayoutManager.setSmoothScrollbarEnabled(true);
 		songlistView.setLayoutManager(customLayoutManager);
 
-		songlistView.addItemDecoration(new DividerItemDecoration(getContext(), 75, true));
+		songlistView.addItemDecoration(new DividerItemDecoration(getContext(), 75, false));
 		songref = FirebaseDatabase.getInstance().getReference();
 
 		songref.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
@@ -134,7 +135,7 @@ public class songs extends Fragment {
 		SortedSet<String> trackNos = new TreeSet<>();
 		for (String albums : values.keySet()) {
 			HashMap<String, Object> songs = (HashMap<String, Object>) values.get(albums);
-			byte[] image = getImage(String.valueOf(values.get("IMAGE")));
+			byte[] image = getImage(String.valueOf(songs.get("IMAGE")));
 			for (String song : songs.keySet()) {
 				if (!song.equals("IMAGE")) {
 					HashMap<String, Object> oneSong = (HashMap<String, Object>) songs.get(song);

@@ -16,10 +16,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
-import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.slideSong;
 import com.bss.arrahmanlyrics.utils.FirstLetterUpperCase;
-import com.bss.arrahmanlyrics.utils.GifImageView;
 import com.bumptech.glide.Glide;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
@@ -29,7 +27,7 @@ import java.util.List;
  * Created by mohan on 5/20/17.
  */
 
-public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapter.MyViewHolder> {
+public class mainFragmentSongAdapter extends RecyclerView.Adapter<mainFragmentSongAdapter.MyViewHolder> {
     private View.OnClickListener mClickListener;
     private Context mContext;
     private List<slideSong> songlist;
@@ -53,7 +51,7 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
         }
     }
 
-    public fragmentSongAdapter(Context mContext, List<slideSong> songlist) {
+    public mainFragmentSongAdapter(Context mContext, List<slideSong> songlist) {
         this.mContext = mContext;
         this.songlist = songlist;
 
@@ -63,7 +61,7 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.song_list_view, parent, false);
+                .inflate(R.layout.main_song_list_view, parent, false);
         RecyclerView.ViewHolder holder = new MyViewHolder(itemView);
 
         return (MyViewHolder) holder;
