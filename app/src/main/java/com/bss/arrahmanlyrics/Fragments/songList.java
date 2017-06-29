@@ -7,9 +7,11 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -17,11 +19,13 @@ import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.adapter.fragmentSongAdapter;
+import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.slideSong;
 import com.bss.arrahmanlyrics.utils.BlurImage;
 import com.bss.arrahmanlyrics.utils.CustomLayoutManager;
 import com.bss.arrahmanlyrics.utils.DividerItemDecoration;
+import com.bss.arrahmanlyrics.utils.RecyclerItemClickListener;
 import com.bss.arrahmanlyrics.utils.SimpleDividerItemDecoration;
 import com.bumptech.glide.Glide;
 import com.google.firebase.database.DataSnapshot;
@@ -106,9 +110,17 @@ public class songList extends Fragment {
         songsListArray = new ArrayList<>();
         adapter = new fragmentSongAdapter(getContext(), songsListArray);
         songlistView.setAdapter(adapter);
-        CustomLayoutManager customLayoutManager = new CustomLayoutManager(getContext());
+        final CustomLayoutManager customLayoutManager = new CustomLayoutManager(getContext());
         customLayoutManager.setSmoothScrollbarEnabled(true);
         songlistView.setLayoutManager(customLayoutManager);
+        songlistView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                slideSong song = songsListArray.get(position);
+                mainApp.getPlayer().setPlay(song.getSongName());
+                mainApp.getPlayer().setLyricsManually(getActivity().getIntent().getExtras().getString("Title"),song.getSongName());
+            }
+        }));
         songlistView.addItemDecoration(new DividerItemDecoration(getContext(),75,true));
         songref = FirebaseDatabase.getInstance().getReference();
 

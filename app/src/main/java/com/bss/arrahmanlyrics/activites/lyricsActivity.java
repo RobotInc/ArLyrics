@@ -1,12 +1,9 @@
 package com.bss.arrahmanlyrics.activites;
 
-import android.app.ProgressDialog;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -14,11 +11,9 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -29,21 +24,15 @@ import com.bss.arrahmanlyrics.Fragments.OtherLyrics;
 import com.bss.arrahmanlyrics.Fragments.songList;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
-import com.bss.arrahmanlyrics.models.Song;
-import com.bss.arrahmanlyrics.models.slideSong;
 import com.bss.arrahmanlyrics.models.songUlr;
 import com.bss.arrahmanlyrics.utils.ArtworkUtils;
-import com.bss.arrahmanlyrics.utils.MusicPlayer;
-import com.bss.arrahmanlyrics.utils.PlayPauseView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +48,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	HashMap<String, Object> values;
 	HashMap<String, String> links;
 	SectionsPagerAdapter section;
-	private ImageView play, next, prev, shuffle,repeat;
+	private ImageView play, next, prev, shuffle;
 	private SeekBar bar;
 	TextView currentDur, totalDur;
 	String movieName,songTitle;
@@ -104,7 +93,6 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		next = (ImageView) findViewById(R.id.forward);
 		prev = (ImageView) findViewById(R.id.backward);
 		shuffle = (ImageView) findViewById(R.id.shuffle_song);
-		repeat = (ImageView) findViewById(R.id.repeat_song);
 		play.setOnClickListener(this);
 		next.setOnClickListener(this);
 		prev.setOnClickListener(this);
@@ -115,6 +103,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser) {
 					mainApp.getPlayer().seekTo(progress);
+
 				}
 
 			}
@@ -320,10 +309,10 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			case R.id.playPause: {
 				if(mainApp.getPlayer().isPlaying()){
 					mainApp.getPlayer().pause();
-					play.setImageResource(R.drawable.ic_action_play);
+					play.setImageResource(R.drawable.btnplay);
 				}else {
 					mainApp.getPlayer().resume();
-					play.setImageResource(R.drawable.ic_action_pause);
+					play.setImageResource(R.drawable.btnpause);
 				}
 
 				break;
@@ -337,6 +326,12 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 				break;
 			}
 			case R.id.shuffle_song: {
+				mainApp.getPlayer().shuffle();
+				if(mainApp.getPlayer().getShuffle()){
+					shuffle.setImageResource(R.drawable.shuffleon);
+				}else {
+					shuffle.setImageResource(R.drawable.shuffle);
+				}
 				break;
 			}
 		}
@@ -449,5 +444,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		oLyrics.lyricsText.setTypeface(tamil);
 
 	}
+	public void setSong(){
 
+	}
 }

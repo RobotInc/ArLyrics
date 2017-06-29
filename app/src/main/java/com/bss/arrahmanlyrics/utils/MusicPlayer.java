@@ -59,6 +59,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	int resumePosition;
 	boolean shuffle = true, repeat = false;
 	EnglishLyrics enLyrics;
+	ArrayList<songUlr> randomList;
 	OtherLyrics oLyrics;
 	private boolean ongoingCall = false;
 
@@ -73,7 +74,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		player.setOnErrorListener(this);
 		player.setOnPreparedListener(this);
 		player.setOnBufferingUpdateListener(this);
-
+		randomList = new ArrayList<>();
 		callStateListener();
 		requestAudioFocus();
 
@@ -105,6 +106,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
+		if(mp.getDuration()==mp.getCurrentPosition()){
+
+			next();
+		}
+
 
 	}
 
@@ -116,14 +122,30 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		play();
-		playButton.setImageResource(R.drawable.ic_action_pause);
-		dialog.hide();
+		playButton.setImageResource(R.drawable.btnpause);
+		dialog.dismiss();
 
 	}
 
 	public void setPlayList(List<songUlr> ulr) {
-		this.ulrs = ulr;
 
+		this.ulrs = ulr;
+		Random r = new Random();
+		List<Integer> randomsNos = new ArrayList<>();
+		for (int a = 0; a < ulr.size(); a++) {
+			int b = 0;
+			do {
+				b = r.nextInt(ulr.size());
+				if (!randomsNos.contains(b)) {
+					randomsNos.add(b);
+				}
+			}while (randomsNos.contains(b) && randomsNos.size()!=ulr.size());
+
+		}
+
+		for (int values : randomsNos) {
+			randomList.add(ulr.get(values));
+		}
 	}
 
 	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, EnglishLyrics enLyrics, OtherLyrics oLyrics) {
@@ -185,10 +207,15 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void next() {
-
-		int totalSongs = ulrs.size();
+		List<songUlr> dummy = new ArrayList<>();
+		if (shuffle) {
+			dummy = randomList;
+		} else {
+			dummy = ulrs;
+		}
+		int totalSongs = dummy.size();
 		if (totalSongs > 0 && songIndex < totalSongs - 1) {
-			songUlr song = ulrs.get(songIndex + 1);
+			songUlr song = dummy.get(songIndex + 1);
 			changeSong(song.getUrl(), song.getSongTitle());
 			songIndex++;
 			setLyricsManually(Movie, song.getSongTitle());
@@ -196,7 +223,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 		} else if (songIndex == totalSongs - 1) {
 
-			songUlr song = ulrs.get(0);
+			songUlr song = dummy.get(0);
 			changeSong(song.getUrl(), song.getSongTitle());
 			songIndex = 0;
 			setLyricsManually(Movie, song.getSongTitle());
@@ -223,9 +250,15 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void previous() {
-		int totalSongs = ulrs.size();
+		List<songUlr> dummy = new ArrayList<>();
+		if (shuffle) {
+			dummy = randomList;
+		} else {
+			dummy = ulrs;
+		}
+		int totalSongs = dummy.size();
 		if (totalSongs > 0 && songIndex > 0) {
-			songUlr song = ulrs.get(songIndex - 1);
+			songUlr song = dummy.get(songIndex - 1);
 			changeSong(song.getUrl(), song.getSongTitle());
 			songIndex--;
 			setLyricsManually(Movie, song.getSongTitle());
@@ -233,7 +266,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 
 		} else if (songIndex == 0) {
-			songUlr song = ulrs.get(totalSongs - 1);
+			songUlr song = dummy.get(totalSongs - 1);
 			changeSong(song.getUrl(), song.getSongTitle());
 			songIndex = totalSongs - 1;
 			setLyricsManually(Movie, song.getSongTitle());
@@ -418,19 +451,51 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		builderEnglish.append(manualSong.get("English"));
 		builderEnglish.append(manualSong.get("EnglishOne"));
 
-		Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(), "english.ttf");
+		//Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(), "english.ttf");
 
 		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
-		enLyrics.lyricsText.setTypeface(english);
+		//enLyrics.lyricsText.setTypeface(english);
 
 		final StringBuilder builderOther = new StringBuilder();
 		builderOther.append(manualSong.get("Others"));
 		builderOther.append(manualSong.get("OthersOne"));
 
-		Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(), "english.ttf");
+		//Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(), "english.ttf");
 
 		oLyrics.lyricsText.setText(String.valueOf(builderOther));
-		oLyrics.lyricsText.setTypeface(tamil);
+		//oLyrics.lyricsText.setTypeface(tamil);
 
+	}
+
+	public boolean getShuffle(){
+		return shuffle;
+	}
+
+	public void setPlay(String name){
+		String download = "";
+
+		for (songUlr ulr : ulrs) {
+			if (ulr.getSongTitle().equals(name)) {
+				download = ulr.getUrl();
+				songIndex = ulrs.indexOf(ulr);
+			}
+		}
+
+
+		try {
+			player.reset();
+			player.setDataSource(download);
+			currentPlayingSong = name;
+
+			dialog = new ProgressDialog(context);
+			dialog.setMessage("Loading Song From database...");
+			dialog.show();
+			player.prepareAsync();
+			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(name);
+			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
+		} catch (IOException e) {
+			//Log.e("error source", String.valueOf(download);
+			Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+		}
 	}
 }
