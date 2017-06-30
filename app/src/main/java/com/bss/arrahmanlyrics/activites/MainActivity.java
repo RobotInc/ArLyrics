@@ -108,29 +108,11 @@ public class MainActivity extends AppCompatActivity
 		TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
 		tabLayout.setupWithViewPager(mViewPager);
 		mFirebaseAuth = FirebaseAuth.getInstance();
-		final GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+		GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 				.requestIdToken(getString(R.string.default_web_client_id))
-				.requestProfile()
 				.requestEmail()
 				.build();
 
-		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.enableAutoManage(this /* FragmentActivity */, this)
-				.addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-				.build();
-	   mAuthListener = new FirebaseAuth.AuthStateListener(){
-
-           @Override
-           public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-               FirebaseUser user = firebaseAuth.getCurrentUser();
-               if(user == null){
-                   Toast.makeText(getApplicationContext(),"Please Log In",Toast.LENGTH_SHORT).show();
-                   signIn();
-               }else {
-                   userEmailId.setText(user.getEmail().toString());
-               }
-           }
-       };
 
 	}
 
@@ -210,7 +192,6 @@ public class MainActivity extends AppCompatActivity
 			handleSignInResult(result);
 		} else {
 			Toast.makeText(getApplicationContext(), "App needs you to login to work smoothly open the app again and login with google account", Toast.LENGTH_LONG).show();
-			finish();
 		}
 	}
 
@@ -314,16 +295,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onStart() {
         super.onStart();
-        mFirebaseAuth.addAuthStateListener(mAuthListener);
+	    FirebaseUser user = mFirebaseAuth.getCurrentUser();
+	    if(user == null){
+		    signIn();
+	    }else {
+		    userEmailId.setText(user.getEmail());
+	    }
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mFirebaseAuth.removeAuthStateListener(mAuthListener);
-        }
-    }
 
 
 }
