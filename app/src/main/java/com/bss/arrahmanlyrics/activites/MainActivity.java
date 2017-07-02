@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 
+
 		FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 		fab.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -113,6 +114,15 @@ public class MainActivity extends AppCompatActivity
 				.requestEmail()
 				.build();
 
+		mGoogleApiClient = new GoogleApiClient.Builder(this)
+				.enableAutoManage(this , new GoogleApiClient.OnConnectionFailedListener() {
+					@Override
+					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+					}
+				} /* OnConnectionFailedListener */)
+				.addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+				.build();
 
 	}
 
@@ -126,12 +136,7 @@ public class MainActivity extends AppCompatActivity
 		}
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -168,6 +173,7 @@ public class MainActivity extends AppCompatActivity
 		} else if (id == R.id.nav_log) {
 			mFirebaseAuth.signOut();
 			Auth.GoogleSignInApi.signOut(mGoogleApiClient);
+
 			signIn();
 
 		}

@@ -2,12 +2,15 @@ package com.bss.arrahmanlyrics.utils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.hardware.camera2.TotalCaptureResult;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,6 +22,7 @@ import com.bss.arrahmanlyrics.Fragments.EnglishLyrics;
 import com.bss.arrahmanlyrics.Fragments.OtherLyrics;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
+import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.songUlr;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,8 +45,9 @@ import java.util.concurrent.TimeUnit;
 public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
 
 	MediaPlayer player;
-	List<songUlr> ulrs;
+	List<Song> ulrs;
 	int songIndex = 0;
+	int ulrsIndex= 0;
 	//HashMap<String, String> list;
 	Context context;
 	String currentPlayingSong;
@@ -59,8 +64,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	int resumePosition;
 	boolean shuffle = true, repeat = false;
 	EnglishLyrics enLyrics;
-	ArrayList<songUlr> randomList;
+	List<Song> randomList;
+	List<Song> currentList;
 	OtherLyrics oLyrics;
+	ImageView cover;
+
 	private boolean ongoingCall = false;
 
 
@@ -75,6 +83,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		player.setOnPreparedListener(this);
 		player.setOnBufferingUpdateListener(this);
 		randomList = new ArrayList<>();
+		currentList = new ArrayList<>();
 		callStateListener();
 		requestAudioFocus();
 
@@ -106,28 +115,30 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		if(mp.getDuration()==mp.getCurrentPosition()){
 
-			next();
-		}
+		next();
 
 
 	}
 
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
-		return false;
+		return true;
 	}
 
 	@Override
 	public void onPrepared(MediaPlayer mp) {
 		play();
 		playButton.setImageResource(R.drawable.btnpause);
+
+		setLyricsManually(Movie,currentPlayingSong);
+		//Song song = currentList.get(currentList.indexOf(currentPlayingSong));
+		//setBackground(song.getImage());
 		dialog.dismiss();
 
 	}
 
-	public void setPlayList(List<songUlr> ulr) {
+	public void setPlayList(List<Song> ulr) {
 
 		this.ulrs = ulr;
 		Random r = new Random();
@@ -139,29 +150,36 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 				if (!randomsNos.contains(b)) {
 					randomsNos.add(b);
 				}
-			}while (randomsNos.contains(b) && randomsNos.size()!=ulr.size());
+			} while (randomsNos.contains(b) && randomsNos.size() != ulr.size());
 
 		}
 
 		for (int values : randomsNos) {
 			randomList.add(ulr.get(values));
 		}
+		currentList = randomList;
 	}
 
-	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, EnglishLyrics enLyrics, OtherLyrics oLyrics) {
+	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, EnglishLyrics enLyrics, OtherLyrics oLyrics,ImageView cover) {
 		String download = "";
-		this.playButton = playButton;
-		for (songUlr ulr : ulrs) {
-			if (ulr.getSongTitle().equals(name)) {
-				download = ulr.getUrl();
-				songIndex = ulrs.indexOf(ulr);
-			}
-		}
 		this.enLyrics = enLyrics;
 		this.bar = bar;
 		this.totalDur = totalDur;
 		this.Movie = moiveName;
 		this.oLyrics = oLyrics;
+		this.cover = cover;
+		this.playButton = playButton;
+		for (Song ulr : currentList) {
+			if (ulr.getSongTitle().equals(name)) {
+				download = ulr.getUlr();
+				songIndex = currentList.indexOf(ulr);
+				ulrsIndex = ulrs.indexOf(ulr);
+				//song = ulr;
+
+
+			}
+		}
+
 
 		try {
 			player.reset();
@@ -207,25 +225,24 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void next() {
-		List<songUlr> dummy = new ArrayList<>();
-		if (shuffle) {
-			dummy = randomList;
-		} else {
-			dummy = ulrs;
-		}
-		int totalSongs = dummy.size();
+
+		int totalSongs = currentList.size();
 		if (totalSongs > 0 && songIndex < totalSongs - 1) {
-			songUlr song = dummy.get(songIndex + 1);
-			changeSong(song.getUrl(), song.getSongTitle());
+			Song song = currentList.get(songIndex + 1);
+			changeSong(song.getUlr(), song.getSongTitle());
+			ulrsIndex = ulrs.indexOf(song);
 			songIndex++;
+			Movie = song.getMovieTitle();
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 		} else if (songIndex == totalSongs - 1) {
 
-			songUlr song = dummy.get(0);
-			changeSong(song.getUrl(), song.getSongTitle());
+			Song song = currentList.get(0);
+			changeSong(song.getUlr(), song.getSongTitle());
+			ulrsIndex = ulrs.indexOf(song);
 			songIndex = 0;
+			Movie = song.getMovieTitle();
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -250,25 +267,25 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void previous() {
-		List<songUlr> dummy = new ArrayList<>();
-		if (shuffle) {
-			dummy = randomList;
-		} else {
-			dummy = ulrs;
-		}
-		int totalSongs = dummy.size();
+
+		int totalSongs = currentList.size();
 		if (totalSongs > 0 && songIndex > 0) {
-			songUlr song = dummy.get(songIndex - 1);
-			changeSong(song.getUrl(), song.getSongTitle());
+			Song song = currentList.get(songIndex - 1);
+			changeSong(song.getUlr(), song.getSongTitle());
+			ulrsIndex = ulrs.indexOf(song);
 			songIndex--;
+			Movie = song.getMovieTitle();
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 
 		} else if (songIndex == 0) {
-			songUlr song = dummy.get(totalSongs - 1);
-			changeSong(song.getUrl(), song.getSongTitle());
+			Song song = currentList.get(totalSongs - 1);
+			changeSong(song.getUlr(), song.getSongTitle());
+			ulrsIndex = ulrs.indexOf(song);
 			songIndex = totalSongs - 1;
+			Movie = song.getMovieTitle();
+			//setBackground(song.getImage());
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -321,8 +338,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	public void shuffle() {
 		if (shuffle) {
 			shuffle = false;
+			songIndex = ulrsIndex;
+			currentList = ulrs;
 		} else {
 			shuffle = true;
+			currentList = randomList;
 		}
 
 	}
@@ -352,6 +372,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	@Override
 	public void onAudioFocusChange(int focusChange) {
+
 
 		//Invoked when the audio focus of the system is updated.
 		switch (focusChange) {
@@ -443,6 +464,19 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			}
 		});
 
+		DatabaseReference refImage = FirebaseDatabase.getInstance().getReference();
+		refImage.child("AR Rahman").child("Tamil").child(albumname).child("IMAGE").addValueEventListener(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot dataSnapshot) {
+				setBackground(String.valueOf(dataSnapshot.getValue()));
+			}
+
+			@Override
+			public void onCancelled(DatabaseError databaseError) {
+
+			}
+		});
+
 	}
 
 	void setLyrics(HashMap<String, Object> manualSong) {
@@ -467,17 +501,18 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	}
 
-	public boolean getShuffle(){
+	public boolean getShuffle() {
 		return shuffle;
 	}
 
-	public void setPlay(String name){
+	public void setPlay(String name) {
 		String download = "";
 
-		for (songUlr ulr : ulrs) {
+		for (Song ulr : ulrs) {
 			if (ulr.getSongTitle().equals(name)) {
-				download = ulr.getUrl();
+				download = ulr.getUlr();
 				songIndex = ulrs.indexOf(ulr);
+				Movie = ulr.getMovieTitle();
 			}
 		}
 
@@ -497,5 +532,28 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			//Log.e("error source", String.valueOf(download);
 			Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
 		}
+	}
+
+
+
+public void setBackground(String image) {
+	try {
+
+		Bitmap bitmap = getBitmap(image);
+		ArtworkUtils.blurPreferances(context, bitmap, cover);
+		//setPalettes(blured);
+	} catch (Exception e) {
+		Log.e("error", e.getMessage());
+	}
+}
+
+	public Bitmap getBitmap(String imageString) {
+		if (imageString.equals(null)) {
+			Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_launcher);
+			return bitmap;
+		}
+		byte[] image = Base64.decode(imageString, Base64.DEFAULT);
+		Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+		return bitmap;
 	}
 }

@@ -18,6 +18,7 @@ import android.widget.Toast;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.slideSong;
+import com.bss.arrahmanlyrics.models.songWithTitle;
 import com.bss.arrahmanlyrics.utils.FirstLetterUpperCase;
 import com.bss.arrahmanlyrics.utils.GifImageView;
 import com.bumptech.glide.Glide;
@@ -32,7 +33,7 @@ import java.util.List;
 public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapter.MyViewHolder> {
     private View.OnClickListener mClickListener;
     private Context mContext;
-    private List<slideSong> songlist;
+    private List<songWithTitle> songlist;
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -53,7 +54,7 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
         }
     }
 
-    public fragmentSongAdapter(Context mContext, List<slideSong> songlist) {
+    public fragmentSongAdapter(Context mContext, List<songWithTitle> songlist) {
         this.mContext = mContext;
         this.songlist = songlist;
 
@@ -71,18 +72,18 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        slideSong actualsong = songlist.get(position);
-        Log.i("actual song name", actualsong.getSongName());
+        songWithTitle actualsong = songlist.get(position);
+
         final Typeface title = Typeface.createFromAsset(mContext.getAssets(), "MavenPro.ttf");
         final Typeface lyricist = Typeface.createFromAsset(mContext.getAssets(), "MavenPro.ttf");
         holder.name.setTypeface(title);
         holder.lyricist.setTypeface(lyricist);
 
-        holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongName()));
-        //holder.name.setText(actualsong.getSongName());
-        Glide.with(mContext).load(actualsong.getBitmap()).into(holder.imageView);
+        holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongTitle()));
+        //holder.name.setText(actualsong.getSongTitle());
+        Glide.with(mContext).load(actualsong.getImages()).into(holder.imageView);
 
-        holder.lyricist.setText(FirstLetterUpperCase.convert("Lyricist : " + actualsong.getLyricistNames()));
+        holder.lyricist.setText(FirstLetterUpperCase.convert("Lyricist : " + actualsong.getLyricistName()));
         //holder.lyricist.setText("Lyricist : " + actualsong.getLyricistNames());
 
 

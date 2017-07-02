@@ -1,34 +1,52 @@
 package com.bss.arrahmanlyrics.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Created by mohan on 5/20/17.
  */
 
-public class Song {
-    String songName;
-    String trackNo;
+public class Song implements Parcelable{
+    String MovieTitle;
+    String songTitle;
     String lyricistNames;
+    String ulr;
 
-    public Song(String songName, String trackNo, String lyricistNames) {
-        this.songName = songName;
-        this.trackNo = trackNo;
+
+    public Song(String MovieTitle, String songTitle,String lyricistNames, String ulr) {
+        this.MovieTitle = MovieTitle;
+        this.songTitle = songTitle;
         this.lyricistNames = lyricistNames;
+        this.ulr = ulr;
     }
 
-    public String getSongName() {
-        return songName;
+    protected Song(Parcel in) {
+        MovieTitle = in.readString();
+        songTitle = in.readString();
+        lyricistNames = in.readString();
+        ulr = in.readString();
     }
 
-    public void setSongName(String songName) {
-        this.songName = songName;
+
+    public static final Creator<Song> CREATOR = new Creator<Song>() {
+        @Override
+        public Song createFromParcel(Parcel in) {
+            return new Song(in);
+        }
+
+        @Override
+        public Song[] newArray(int size) {
+            return new Song[size];
+        }
+    };
+
+    public String getSongTitle() {
+        return songTitle;
     }
 
-    public String getTrackNo() {
-        return trackNo;
-    }
-
-    public void setTrackNo(String trackNo) {
-        this.trackNo = trackNo;
+    public void setSongTitle(String songTitle) {
+        this.songTitle = songTitle;
     }
 
     public String getLyricistNames() {
@@ -39,4 +57,32 @@ public class Song {
         this.lyricistNames = lyricistNames;
     }
 
+    public String getUlr() {
+        return ulr;
+    }
+
+    public void setUlr(String ulr) {
+        this.ulr = ulr;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(MovieTitle);
+        dest.writeString(songTitle);
+        dest.writeString(lyricistNames);
+        dest.writeString(ulr);
+    }
+
+    public String getMovieTitle() {
+        return MovieTitle;
+    }
+
+    public void setMovieTitle(String movieTitle) {
+        MovieTitle = movieTitle;
+    }
 }

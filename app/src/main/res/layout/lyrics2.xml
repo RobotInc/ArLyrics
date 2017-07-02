@@ -33,7 +33,15 @@
         android:layout_height="match_parent"
         android:background="@color/bgcolor">
 
-
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:id="@+id/searchBar"
+            android:visibility="invisible"
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp"/>
         <LinearLayout
             android:id="@+id/song_info"
             android:layout_width="match_parent"
@@ -89,7 +97,17 @@
                     android:textSize="14sp"/>
 
             </LinearLayout>
-
+            <ImageButton
+                android:id="@+id/search_song"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_weight="0"
+                android:background="@drawable/search"
+               android:backgroundTint="@null"
+                android:paddingLeft="0dp"
+                android:visibility="invisible"
+                android:paddingRight="2dp"
+               />
             <ImageButton
                 android:id="@+id/menu_button"
                 android:layout_width="wrap_content"
@@ -131,7 +149,7 @@
             android:layout_marginBottom="4dp"
             android:orientation="horizontal">
 
-            <TextView
+            <com.bss.arrahmanlyrics.utils.degitalText
                 android:id="@+id/currentDur"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -142,7 +160,7 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="0.0"
-                android:textColor="#ffffff"
+                android:textColor="#a000ffae"
                 android:textSize="16sp"/>
 
             <SeekBar
@@ -152,12 +170,14 @@
                 android:layout_gravity="center"
                 android:layout_marginEnd="2dp"
                 android:layout_marginStart="2dp"
+                android:progressTint="#a000ffae"
                 android:layout_weight="1"
+                android:thumbTint="#a000ffae"
                 android:gravity="center"
                 android:padding="8dp"
-                android:secondaryProgressTint="#ffcfee"/>
+                android:secondaryProgressTint="#789bfdde"/>
 
-            <TextView
+            <com.bss.arrahmanlyrics.utils.degitalText
                 android:id="@+id/totalDur"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -168,7 +188,8 @@
                 android:gravity="center"
                 android:maxLines="1"
                 android:text="0.0"
-                android:textColor="#ffffff"
+                android:textStyle="bold"
+                android:textColor="#a000ffae"
                 android:textSize="16sp"/>
 
         </LinearLayout>

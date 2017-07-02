@@ -2,22 +2,35 @@ package com.bss.arrahmanlyrics.Fragments;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.fragmentSongAdapter;
 import com.bss.arrahmanlyrics.adapter.mainFragmentSongAdapter;
+import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.slideSong;
+import com.bss.arrahmanlyrics.models.songWithTitle;
 import com.bss.arrahmanlyrics.utils.CustomLayoutManager;
 import com.bss.arrahmanlyrics.utils.DividerItemDecoration;
+import com.bss.arrahmanlyrics.utils.RecyclerItemClickListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -40,7 +53,7 @@ import java.util.TreeSet;
  * Use the {@link songs#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class songs extends Fragment {
+public class songs extends Fragment implements SearchView.OnQueryTextListener {
 	// TODO: Rename parameter arguments, choose names that match
 	// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 	private static final String ARG_PARAM1 = "param1";
@@ -51,11 +64,14 @@ public class songs extends Fragment {
 	private String mParam2;
 
 	FastScrollRecyclerView songlistView;
-	List<slideSong> songlist;
+	List<songWithTitle> songlist;
+	List<songWithTitle> filtered;
+	ArrayList<Song> passedList;
 	HashMap<String, Object> values;
 	DatabaseReference songref;
 	mainFragmentSongAdapter adapter;
 	ProgressDialog dialog;
+	SearchView searchView;
 
 	private OnFragmentInteractionListener mListener;
 
@@ -92,14 +108,16 @@ public class songs extends Fragment {
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-	                         Bundle savedInstanceState) {
+	                         final Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		//return inflater.inflate(R.layout.fragment_songs, container, false);
 		View rootView = inflater.inflate(R.layout.fragment_songs, container, false);
+		setHasOptionsMenu(true);
 		dialog = new ProgressDialog(getContext());
 		dialog.setMessage("Loading Album");
 		dialog.show();
 		songlist = new ArrayList<>();
+		passedList = new ArrayList<>();
 		adapter = new mainFragmentSongAdapter(getContext(), songlist);
 		songlistView = (FastScrollRecyclerView) rootView.findViewById(R.id.songPlayList);
 		songlistView.setAdapter(adapter);
@@ -108,6 +126,25 @@ public class songs extends Fragment {
 		songlistView.setLayoutManager(customLayoutManager);
 
 		songlistView.addItemDecoration(new DividerItemDecoration(getContext(), 75, false));
+		songlistView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
+			@Override
+			public void onItemClick(View view, int position) {
+				songWithTitle song = filtered.get(position);
+				Bundle bundle = new Bundle();
+				bundle.putParcelableArrayList("list", passedList);
+				bundle.putString("selectedSong", song.getSongTitle());
+				bundle.putString("Title", song.getMovietitle());
+				//bundle.putString("trackNo",song.getTrackNo());
+				Toast.makeText(getContext(), song.getMovietitle(), Toast.LENGTH_SHORT).show();
+				Intent i = new Intent(getContext(), lyricsActivity.class);
+
+
+				i.putExtras(bundle);
+				startActivity(i);
+
+
+			}
+		}));
 		songref = FirebaseDatabase.getInstance().getReference();
 
 		songref.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
@@ -131,7 +168,7 @@ public class songs extends Fragment {
 
 	private void prepareSongList() {
 		songlist.clear();
-		List<slideSong> list = new ArrayList<>();
+		List<songWithTitle> list = new ArrayList<>();
 		SortedSet<String> trackNos = new TreeSet<>();
 		for (String albums : values.keySet()) {
 			HashMap<String, Object> songs = (HashMap<String, Object>) values.get(albums);
@@ -139,7 +176,7 @@ public class songs extends Fragment {
 			for (String song : songs.keySet()) {
 				if (!song.equals("IMAGE")) {
 					HashMap<String, Object> oneSong = (HashMap<String, Object>) songs.get(song);
-					slideSong newSong = new slideSong(song, oneSong.get("Track NO").toString(), oneSong.get("Lyricist").toString(),image);
+					songWithTitle newSong = new songWithTitle(albums, song, oneSong.get("Lyricist").toString(), image, String.valueOf(oneSong.get("Download")));
 					list.add(newSong);
 					trackNos.add(song);
 				}
@@ -149,15 +186,33 @@ public class songs extends Fragment {
 
 
 		for (String Track : trackNos) {
-			for (slideSong songNo : list) {
-				if (songNo.getSongName().equals(Track)) {
+			for (songWithTitle songNo : list) {
+				if (songNo.getSongTitle().equals(Track)) {
 					songlist.add(songNo);
 				}
 			}
 
 		}
+		setPlayList();
 		adapter.notifyDataSetChanged();
 
+	}
+
+	private void setPlayList() {
+		passedList.clear();
+		for (String movie : values.keySet()) {
+			HashMap<String, Object> songs = (HashMap<String, Object>) values.get(movie);
+			for (String song : songs.keySet()) {
+
+
+				if (!song.equals("IMAGE")) {
+
+					HashMap<String, Object> oneSong = (HashMap<String, Object>) songs.get(song);
+					Song passingSongList = new Song(movie, song, String.valueOf(oneSong.get("Lyricist")), String.valueOf(oneSong.get("Download")));
+					passedList.add(passingSongList);
+				}
+			}
+		}
 	}
 
 	// TODO: Rename method, update argument and hook method into UI event
@@ -172,6 +227,25 @@ public class songs extends Fragment {
 	public void onDetach() {
 		super.onDetach();
 		mListener = null;
+	}
+
+	@Override
+	public boolean onQueryTextSubmit(String query) {
+		return false;
+	}
+
+	@Override
+	public boolean onQueryTextChange(String newText) {
+
+		filtered = new ArrayList<>();
+		filtered = filterAlbum(songlist,newText);
+		if(TextUtils.isEmpty(newText)){
+			adapter.setFilter(songlist);
+		}else {
+			adapter.setFilter(filtered);
+		}
+
+		return true;
 	}
 
 	/**
@@ -190,8 +264,6 @@ public class songs extends Fragment {
 	}
 
 
-
-
 	private byte[] getImage(String imageString) {
 		if (imageString.equals(null)) {
 			Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
@@ -204,11 +276,38 @@ public class songs extends Fragment {
 		byte[] decodedString = Base64.decode(imageString, Base64.DEFAULT);
 		//Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 		return decodedString;
-	} @Override
+	}
+
+	@Override
 	public void onPause() {
 		super.onPause();
 		dialog.dismiss();
 	}
 
+	public List<songWithTitle> filterAlbum(List<songWithTitle> listsongs, String query) {
+		query = query.toLowerCase();
+		final List<songWithTitle> filteralbumlist = new ArrayList<>();
+		for (songWithTitle songs : listsongs) {
+			final String text1 = songs.getSongTitle().toLowerCase();
+			final String text2 = songs.getMovietitle().toLowerCase();
+			final String text3 = songs.getLyricistName().toLowerCase();
+			if (text1.contains(query) || text2.contains(query) || text3.contains(query)) {
+				filteralbumlist.add(songs);
+			}
+		}
+		return filteralbumlist;
+	}
 
+
+
+
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		super.onCreateOptionsMenu(menu, inflater);
+		inflater.inflate(R.menu.songmenu, menu);
+		searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.song_search));
+		searchView.setOnQueryTextListener(this);
+		searchView.setQueryHint("Search songs");
+
+	}
 }

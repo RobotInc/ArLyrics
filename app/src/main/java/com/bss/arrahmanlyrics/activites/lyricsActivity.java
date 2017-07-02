@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
@@ -14,6 +15,8 @@ import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -24,7 +27,9 @@ import com.bss.arrahmanlyrics.Fragments.OtherLyrics;
 import com.bss.arrahmanlyrics.Fragments.songList;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
+import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.songUlr;
+import com.bss.arrahmanlyrics.models.songWithTitle;
 import com.bss.arrahmanlyrics.utils.ArtworkUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -44,7 +49,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	DatabaseReference imageRef;
 	DatabaseReference songRef;
 	ViewPager lyricsPager;
-	List<String> songList;
+	//List<String> songList;
 	HashMap<String, Object> values;
 	HashMap<String, String> links;
 	SectionsPagerAdapter section;
@@ -52,9 +57,13 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	private SeekBar bar;
 	TextView currentDur, totalDur;
 	String movieName,songTitle;
+	List<Song> passedList;
 	EnglishLyrics enLyrics;
 	OtherLyrics oLyrics;
 	HashMap<String,Object> manualSong;
+	ImageView cover;
+	ImageButton search;
+	EditText searchBar;
 
 	//MusicPlayer mainApp.getPlayer();
 
@@ -76,19 +85,55 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		section.addFragment(new songList(), "Song List");
 		section.addFragment(enLyrics, "English Lyrics");
 		section.addFragment(oLyrics, "Other Lyrics");
-		songList = new ArrayList<>();
-
+		//songList = new ArrayList<>();
+		passedList = getIntent().getExtras().getParcelableArrayList("list");
+		search = (ImageButton) findViewById(R.id.search_song);
+		search.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				search.setVisibility(View.INVISIBLE);
+				searchBar.setVisibility(View.VISIBLE);
+			}
+		});
+		searchBar = (EditText) findViewById(R.id.searchBar);
 		values = new HashMap<>();
 		lyricsPager.setAdapter(section);
 		lyricsPager.setCurrentItem(1);
 		lyricsPager.setOffscreenPageLimit(2);
+		lyricsPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+			@Override
+			public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+			}
+
+			@Override
+			public void onPageSelected(int position) {
+				if(position==0){
+					search.setVisibility(View.VISIBLE);
+				}else {
+					search.setVisibility(View.INVISIBLE);
+				}
+			}
+
+			@Override
+			public void onPageScrollStateChanged(int state) {
+
+			}
+		});
 		//if (!slidingpanel.isOpen()) {
 		//     slidingpanel.closePane();
 		//  } else {
 		//      slidingpanel.openPane();
 		//  }
 		movieName = getIntent().getExtras().getString("Title");
-		songTitle = getIntent().getExtras().getString("SongTitle");
+		Log.e("selected Movie",movieName);
+		Log.e("selected song",getIntent().getExtras().getString("selectedSong"));
+		if(getIntent().getExtras().getString("selectedSong").equals("")){
+			songTitle = ((Song)passedList.get(0)).getSongTitle();
+		}else {
+			songTitle = getIntent().getExtras().getString("selectedSong");
+		}
+
 		play = (ImageView) findViewById(R.id.playPause);
 		next = (ImageView) findViewById(R.id.forward);
 		prev = (ImageView) findViewById(R.id.backward);
@@ -98,6 +143,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		prev.setOnClickListener(this);
 		shuffle.setOnClickListener(this);
 		bar = (SeekBar) findViewById(R.id.custombar);
+		cover = (ImageView) findViewById(R.id.blurArtwork);
 		bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -128,7 +174,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		//customLayoutManager.setSmoothScrollbarEnabled(true);
 		// songlistView.setLayoutManager(customLayoutManager);
 		// songlistView.addItemDecoration(new SimpleDividerItemDecoration(getApplicationContext()));
-		imageRef = FirebaseDatabase.getInstance().getReference();
+		/*imageRef = FirebaseDatabase.getInstance().getReference();
 		imageRef.child("AR Rahman").child("Tamil").child(getIntent().getExtras().getString("Title")).child("IMAGE").addValueEventListener(new ValueEventListener() {
 			@Override
 			public void onDataChange(DataSnapshot dataSnapshot) {
@@ -144,8 +190,8 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			public void onCancelled(DatabaseError databaseError) {
 				Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
 			}
-		});
-		songRef = FirebaseDatabase.getInstance().getReference();
+		});*/
+		/*songRef = FirebaseDatabase.getInstance().getReference();
 		songRef.child("AR Rahman").child("Tamil").child(getIntent().getExtras().getString("Title")).addValueEventListener(new ValueEventListener() {
 			@Override
 			public void onDataChange(DataSnapshot dataSnapshot) {
@@ -158,13 +204,13 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			public void onCancelled(DatabaseError databaseError) {
 
 			}
-		});
-
+		});*/
+	preparePlaylist();
 
 	}
 
 	private void preparePlaylist() {
-		List<songUlr> ulrs = new ArrayList<>();
+		/*List<songUlr> ulrs = new ArrayList<>();
 		songList.clear();
 		SortedSet<String> sorted = new TreeSet<>();
 		for (String songs : values.keySet()) {
@@ -179,11 +225,11 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			HashMap<String, Object> oneSong = (HashMap<String, Object>) values.get(sortedName);
 			songUlr url = new songUlr(sortedName,String.valueOf(oneSong.get("Download")));
 			ulrs.add(url);
-		}
+		}*/
 
-		mainApp.getPlayer().setPlayList(ulrs);
-		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,enLyrics,oLyrics);
-		setLyricsManually(movieName,songTitle);
+		mainApp.getPlayer().setPlayList(passedList);
+		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,enLyrics,oLyrics,cover);
+		//setLyricsManually(movieName,songTitle);
 
 		//play.setImageResource(R.drawable.ic_action_pause);
 		Log.e("duration", String.valueOf(mainApp.getPlayer().getDuration()));
@@ -429,22 +475,18 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		builderEnglish.append(manualSong.get("English"));
 		builderEnglish.append(manualSong.get("EnglishOne"));
 
-		Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(),"english.ttf");
 
 		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
-		enLyrics.lyricsText.setTypeface(english);
 
 		final StringBuilder builderOther = new StringBuilder();
 		builderOther.append(manualSong.get("Others"));
 		builderOther.append(manualSong.get("OthersOne"));
 
-		Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(),"english.ttf");
 
 		oLyrics.lyricsText.setText(String.valueOf(builderOther));
-		oLyrics.lyricsText.setTypeface(tamil);
 
 	}
-	public void setSong(){
-
+	public ImageButton getSearchButton(){
+		return search;
 	}
 }

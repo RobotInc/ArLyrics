@@ -17,10 +17,12 @@ import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.models.slideSong;
+import com.bss.arrahmanlyrics.models.songWithTitle;
 import com.bss.arrahmanlyrics.utils.FirstLetterUpperCase;
 import com.bumptech.glide.Glide;
 import com.mikhaellopez.circularimageview.CircularImageView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +32,7 @@ import java.util.List;
 public class mainFragmentSongAdapter extends RecyclerView.Adapter<mainFragmentSongAdapter.MyViewHolder> {
     private View.OnClickListener mClickListener;
     private Context mContext;
-    private List<slideSong> songlist;
+    private List<songWithTitle> songlist;
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -51,7 +53,7 @@ public class mainFragmentSongAdapter extends RecyclerView.Adapter<mainFragmentSo
         }
     }
 
-    public mainFragmentSongAdapter(Context mContext, List<slideSong> songlist) {
+    public mainFragmentSongAdapter(Context mContext, List<songWithTitle> songlist) {
         this.mContext = mContext;
         this.songlist = songlist;
 
@@ -69,18 +71,18 @@ public class mainFragmentSongAdapter extends RecyclerView.Adapter<mainFragmentSo
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        slideSong actualsong = songlist.get(position);
-        Log.i("actual song name", actualsong.getSongName());
+        songWithTitle actualsong = songlist.get(position);
+
         final Typeface title = Typeface.createFromAsset(mContext.getAssets(), "MavenPro.ttf");
         final Typeface lyricist = Typeface.createFromAsset(mContext.getAssets(), "MavenPro.ttf");
         holder.name.setTypeface(title);
         holder.lyricist.setTypeface(lyricist);
 
-        holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongName()));
-        //holder.name.setText(actualsong.getSongName());
-        Glide.with(mContext).load(actualsong.getBitmap()).into(holder.imageView);
+        holder.name.setText(FirstLetterUpperCase.convert(actualsong.getSongTitle()));
+        //holder.name.setText(actualsong.getSongTitle());
+        Glide.with(mContext).load(actualsong.getImages()).into(holder.imageView);
 
-        holder.lyricist.setText(FirstLetterUpperCase.convert("Lyricist : " + actualsong.getLyricistNames()));
+        holder.lyricist.setText(FirstLetterUpperCase.convert("Lyricist : " + actualsong.getLyricistName()));
         //holder.lyricist.setText("Lyricist : " + actualsong.getLyricistNames());
 
 
@@ -142,5 +144,11 @@ public class mainFragmentSongAdapter extends RecyclerView.Adapter<mainFragmentSo
         }
 
         return res.toString().trim();
+    }
+
+    public void setFilter(List<songWithTitle> songlists){
+       songlist = new ArrayList<>();
+        songlist.addAll(songlists);
+        notifyDataSetChanged();
     }
 }

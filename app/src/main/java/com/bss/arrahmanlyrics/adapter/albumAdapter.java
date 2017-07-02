@@ -21,6 +21,7 @@ import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.models.Album;
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +49,7 @@ public class albumAdapter extends RecyclerView.Adapter<albumAdapter.MyViewHolder
     @Override
     public void onBindViewHolder(final albumAdapter.MyViewHolder holder, int position) {
         Album album = albumList.get(position);
-        Log.i("actual album name", album.getName());
+
         final Typeface font = Typeface.createFromAsset(Context.getAssets(), "Timber.ttf");
         holder.title.setTypeface(font);
         holder.title.setText(album.getName());
@@ -125,5 +126,11 @@ public class albumAdapter extends RecyclerView.Adapter<albumAdapter.MyViewHolder
             backgroundColor = (LinearLayout) view.findViewById(R.id.backgroundColor);
 
         }
+    }
+
+    public void setFilter(List<Album> albumLists){
+	   albumList = new ArrayList<>();
+	    albumList.addAll(albumLists);
+	    notifyDataSetChanged();
     }
 }
