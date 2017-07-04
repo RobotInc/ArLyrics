@@ -3,6 +3,7 @@ package com.bss.arrahmanlyrics.Fragments;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -125,7 +126,7 @@ public class songList extends Fragment {
 		songlistView.setAdapter(adapter);
 		final CustomLayoutManager customLayoutManager = new CustomLayoutManager(getContext());
 		customLayoutManager.setSmoothScrollbarEnabled(true);
-
+		songlistView.setThumbColor(Color.parseColor("#a000ffae"));
 		songlistView.setLayoutManager(customLayoutManager);
 		songlistView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
 			@Override

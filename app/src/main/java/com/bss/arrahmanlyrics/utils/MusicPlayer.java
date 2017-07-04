@@ -24,12 +24,15 @@ import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.songUlr;
+import com.danikula.videocache.CacheListener;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  * Created by mohan on 6/26/17.
  */
 
-public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener {
+public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, AudioManager.OnAudioFocusChangeListener,CacheListener {
 
 	MediaPlayer player;
 	List<Song> ulrs;
@@ -67,14 +70,15 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	List<Song> randomList;
 	List<Song> currentList;
 	OtherLyrics oLyrics;
-	ImageView cover;
+	ImageView cover,favorites;
+	SharedPreference sp;
 
 	private boolean ongoingCall = false;
 
 
 	public MusicPlayer(Context context) {
 		this.context = context;
-
+		sp = new SharedPreference();
 		player = new MediaPlayer();
 		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
@@ -107,10 +111,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	@Override
 	public void onBufferingUpdate(MediaPlayer mp, int percent) {
-		double ratio = percent / 100.0;
-		int bufferingLevel = (int) (mp.getDuration() * ratio);
 
-		bar.setSecondaryProgress(bufferingLevel);
+		//double ratio = percent / 100.0;
+		//int bufferingLevel = (int) (mp.getDuration() * ratio);
+
+		//bar.setSecondaryProgress(bufferingLevel);
 	}
 
 	@Override
@@ -160,7 +165,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		currentList = randomList;
 	}
 
-	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, EnglishLyrics enLyrics, OtherLyrics oLyrics,ImageView cover) {
+	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton,ImageView favorites, EnglishLyrics enLyrics, OtherLyrics oLyrics,ImageView cover) {
 		String download = "";
 		this.enLyrics = enLyrics;
 		this.bar = bar;
@@ -169,9 +174,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		this.oLyrics = oLyrics;
 		this.cover = cover;
 		this.playButton = playButton;
+		this.favorites = favorites;
 		for (Song ulr : currentList) {
 			if (ulr.getSongTitle().equals(name)) {
 				download = ulr.getUlr();
+
 				songIndex = currentList.indexOf(ulr);
 				ulrsIndex = ulrs.indexOf(ulr);
 				//song = ulr;
@@ -183,14 +190,19 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 		try {
 			player.reset();
-			player.setDataSource(download);
+			checkCachedState(download);
+
+			player.setDataSource(setProxyUrl(download));
 			Log.i("source",download);
 			currentPlayingSong = name;
+			//checkFavoriteItem(currentPlayingSong);
 			context = presetContext;
 			dialog = new ProgressDialog(presetContext);
 			dialog.setMessage("Loading Song From database...");
 			dialog.show();
 			player.prepareAsync();
+			//((TextView) this.enLyrics.getActivity().findViewById(R.id.song_title)).setText(name);
+			//((TextView) this.enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
 		} catch (IOException e) {
 			//Log.e("error source", String.valueOf(download);
 			Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -234,6 +246,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			ulrsIndex = ulrs.indexOf(song);
 			songIndex++;
 			Movie = song.getMovieTitle();
+			//checkFavoriteItem(song.getSongTitle());
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -244,6 +257,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			ulrsIndex = ulrs.indexOf(song);
 			songIndex = 0;
 			Movie = song.getMovieTitle();
+			//checkFavoriteItem(song.getSongTitle());
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -253,8 +267,12 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 	private void changeSong(String download, String name) {
 		try {
+
 			player.reset();
-			player.setDataSource(download);
+			checkCachedState(download);
+
+			player.setDataSource(setProxyUrl(download));
+			//player.setDataSource(download);
 			currentPlayingSong = name;
 			dialog = new ProgressDialog(context);
 			dialog.setMessage("Loading Song From database...");
@@ -276,6 +294,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			ulrsIndex = ulrs.indexOf(song);
 			songIndex--;
 			Movie = song.getMovieTitle();
+			//checkFavoriteItem(song.getSongTitle());
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(Movie);
@@ -286,6 +305,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			ulrsIndex = ulrs.indexOf(song);
 			songIndex = totalSongs - 1;
 			Movie = song.getMovieTitle();
+			//checkFavoriteItem(song.getSongTitle());
 			//setBackground(song.getImage());
 			setLyricsManually(Movie, song.getSongTitle());
 			((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(song.getSongTitle());
@@ -447,7 +467,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 
-	public void setLyricsManually(String albumname, String songTitle) {
+	public void setLyricsManually(final String albumname, final String songTitle) {
 		DatabaseReference ref = FirebaseDatabase.getInstance().getReference();
 		ref.child("AR Rahman").child("Tamil").child(albumname).child(songTitle).addValueEventListener(new ValueEventListener() {
 			@Override
@@ -455,6 +475,8 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 				manualSong = (HashMap<String, Object>) dataSnapshot.getValue();
 				Log.i("Selected Song", String.valueOf(manualSong));
+				((TextView) enLyrics.getActivity().findViewById(R.id.song_title)).setText(songTitle);
+				((TextView) enLyrics.getActivity().findViewById(R.id.album_title)).setText(albumname);
 				setLyrics(manualSong);
 
 			}
@@ -513,6 +535,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 			if (ulr.getSongTitle().equals(name)) {
 				download = ulr.getUlr();
 				songIndex = ulrs.indexOf(ulr);
+
 				Movie = ulr.getMovieTitle();
 			}
 		}
@@ -520,9 +543,12 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 
 		try {
 			player.reset();
-			player.setDataSource(download);
-			currentPlayingSong = name;
+			checkCachedState(download);
 
+			player.setDataSource(setProxyUrl(download));
+			//player.setDataSource(download);
+			currentPlayingSong = name;
+		//	checkFavoriteItem(currentPlayingSong);
 			dialog = new ProgressDialog(context);
 			dialog.setMessage("Loading Song From database...");
 			dialog.show();
@@ -557,4 +583,79 @@ public void setBackground(String image) {
 		Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
 		return bitmap;
 	}
+
+	@Override
+	public void onCacheAvailable(File cacheFile, String url, int percentsAvailable) {
+		double ratio = percentsAvailable / 100.0;
+		int bufferingLevel = (int) (player.getDuration() * ratio);
+		bar.setSecondaryProgress(bufferingLevel);
+
+		Log.e("proxy", String.format("onCacheAvailable. percents: %d, file: %s, url: %s", percentsAvailable, cacheFile, url));
+	}
+	private void checkCachedState(String url) {
+		HttpProxyCacheServer proxy = mainApp.getProxy(context);
+		boolean fullyCached = proxy.isCached(url);
+
+		if (fullyCached) {
+			double ratio = 100 / 100.0;
+			int bufferingLevel = (int) (player.getDuration() * ratio);
+			bar.setSecondaryProgress(bufferingLevel);
+		}
+	}
+
+	private String setProxyUrl(String url) throws IOException {
+		HttpProxyCacheServer proxy = mainApp.getProxy(context);
+		proxy.registerCacheListener(this, url);
+		String proxyUrl = proxy.getProxyUrl(url);
+		Log.d("proxy", "Use proxy url " + proxyUrl + " instead of original url " + url);
+		return proxyUrl;
+
+	}
+	public void stopCacheListener(){
+		mainApp.getProxy(context).unregisterCacheListener(this);
+	}
+/*
+	public void addFavorites(){
+		Song song = currentList.get(currentList.indexOf(currentPlayingSong));
+		this.favorites.setImageResource(R.drawable.ic_action_favorite_on);
+		sp.addFavorite(context, song);
+
+	}
+	public void removeFavorites(){
+		Song song = currentList.get(currentList.indexOf(currentPlayingSong));
+		this.favorites.setImageResource(R.drawable.ic_action_favorite);
+		sp.removeFavorite(context, song);
+
+	}
+	public void checkFavoriteItem(String Name) {
+		Song song = currentList.get(currentList.indexOf(currentPlayingSong));
+		List<Song> favorites = sp.getFavorites(context);
+		if (favorites != null) {
+			for (Song product : favorites) {
+				if (product.equals(song)) {
+					this.favorites.setImageResource(R.drawable.ic_action_favorite_on);
+					break;
+				}
+			}
+
+			this.favorites.setImageResource(R.drawable.ic_action_favorite);
+		}
+
+	}
+	public boolean checkFavoriteItem() {
+		Song song = currentList.get(currentList.indexOf(currentPlayingSong));
+		List<Song> favorites = sp.getFavorites(context);
+		if (favorites != null) {
+			for (Song product : favorites) {
+				if (product.equals(song)) {
+					return true;
+
+				}
+			}
+
+
+		}
+		return false;
+
+	}*/
 }

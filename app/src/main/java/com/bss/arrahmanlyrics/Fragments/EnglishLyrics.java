@@ -87,7 +87,7 @@ public class EnglishLyrics extends Fragment {
         lyricsText = (TextView) view.findViewById(R.id.lyricsEnglish) ;
         song_title = (TextView) getActivity().findViewById(R.id.song_title);
         album_title = (TextView) getActivity().findViewById(R.id.album_title);
-        song_title.setText(getActivity().getIntent().getExtras().getString("SongTitle"));
+        song_title.setText(getActivity().getIntent().getExtras().getString("selectedSong"));
         album_title.setText(getActivity().getIntent().getExtras().getString("Title"));
 
         return view;

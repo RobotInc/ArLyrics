@@ -53,7 +53,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	HashMap<String, Object> values;
 	HashMap<String, String> links;
 	SectionsPagerAdapter section;
-	private ImageView play, next, prev, shuffle;
+	private ImageView play, next, prev, shuffle,favorite;
 	private SeekBar bar;
 	TextView currentDur, totalDur;
 	String movieName,songTitle;
@@ -61,6 +61,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	EnglishLyrics enLyrics;
 	OtherLyrics oLyrics;
 	HashMap<String,Object> manualSong;
+	boolean toggleFavorite = false;
 	ImageView cover;
 	ImageButton search;
 	EditText searchBar;
@@ -74,7 +75,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.lyrics2);
 		overridePendingTransition(R.anim.slide_in_up, R.anim.fade_back);
-		getWindow().setStatusBarColor(Color.parseColor("#FF9F721E"));
+		getWindow().setStatusBarColor(Color.parseColor("#a000ffae"));
 		links = new HashMap<>();
 		lyricsPager = (ViewPager) findViewById(R.id.lyricsPager);
 		//slidingpanel = (SlidingPaneLayout) findViewById(R.id.slidingpanelayout);
@@ -96,6 +97,9 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			}
 		});
 		searchBar = (EditText) findViewById(R.id.searchBar);
+
+
+
 		values = new HashMap<>();
 		lyricsPager.setAdapter(section);
 		lyricsPager.setCurrentItem(1);
@@ -138,6 +142,8 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		next = (ImageView) findViewById(R.id.forward);
 		prev = (ImageView) findViewById(R.id.backward);
 		shuffle = (ImageView) findViewById(R.id.shuffle_song);
+		favorite = (ImageView) findViewById(R.id.favorite);
+		favorite.setOnClickListener(this);
 		play.setOnClickListener(this);
 		next.setOnClickListener(this);
 		prev.setOnClickListener(this);
@@ -228,7 +234,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		}*/
 
 		mainApp.getPlayer().setPlayList(passedList);
-		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,enLyrics,oLyrics,cover);
+		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,favorite,enLyrics,oLyrics,cover);
 		//setLyricsManually(movieName,songTitle);
 
 		//play.setImageResource(R.drawable.ic_action_pause);
@@ -380,6 +386,18 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 				}
 				break;
 			}
+			case R.id.favorite: {
+				if(toggleFavorite){
+					toggleFavorite = false;
+					favorite.setImageResource(R.drawable.ic_action_favorite);
+					//mainApp.getPlayer().removeFavorites();
+				}else {
+					toggleFavorite = true;
+					favorite.setImageResource(R.drawable.ic_action_favorite_on);
+					//mainApp.getPlayer().addFavorites();
+
+				}
+			}
 		}
 	}
 
@@ -488,5 +506,11 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	}
 	public ImageButton getSearchButton(){
 		return search;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		mainApp.getPlayer().stopCacheListener();
 	}
 }

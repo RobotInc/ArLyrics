@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 
 import com.bss.arrahmanlyrics.utils.MusicPlayer;
+import com.bss.arrahmanlyrics.utils.mediaCache;
+import com.danikula.videocache.HttpProxyCacheServer;
 import com.google.firebase.database.FirebaseDatabase;
 
 /**
@@ -14,6 +16,8 @@ import com.google.firebase.database.FirebaseDatabase;
 public class mainApp extends Application {
     private static Context mContext;
     private static MusicPlayer player;
+    private HttpProxyCacheServer proxy;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -48,5 +52,14 @@ public class mainApp extends Application {
         return player;
     }
 
+    public static HttpProxyCacheServer getProxy(Context context) {
+        mainApp app = (mainApp) context.getApplicationContext();
+        return app.proxy == null ? (app.proxy = app.newProxy()) : app.proxy;
+    }
 
+    private HttpProxyCacheServer newProxy() {
+        return new HttpProxyCacheServer.Builder(this)
+                .cacheDirectory(mediaCache.getVideoCacheDir(this))
+                .build();
+    }
 }

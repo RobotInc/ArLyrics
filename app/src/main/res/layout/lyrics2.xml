@@ -269,8 +269,7 @@
                 android:layout_marginStart="15dp"
 
                 android:clickable="true"
-                android:src="@drawable/ic_action_favorite"
-                android:tint="@android:color/white"/>
+                android:src="@drawable/ic_action_favorite"/>
 
         </LinearLayout>
 

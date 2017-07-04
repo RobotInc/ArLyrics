@@ -14,11 +14,12 @@
         android:layout_height="match_parent"
         android:fadeScrollbars="true"
         app:fastScrollAutoHide="true"
+
         app:fastScrollAutoHideDelay="1500"
         app:fastScrollPopupBackgroundSize="64dp"
-        app:fastScrollPopupBgColor="@color/colorAccent"
-        app:fastScrollPopupTextColor="@android:color/primary_text_dark"
+        app:fastScrollPopupBgColor="#46f99c"
+        app:fastScrollPopupTextColor="#46f99c"
         app:fastScrollPopupTextSize="44sp"
-        app:fastScrollThumbColor="@color/colorAccent"
+        app:fastScrollThumbColor="#46f99c"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 </FrameLayout>

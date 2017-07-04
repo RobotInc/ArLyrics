@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity
 
 		mSectionsPagerAdapter.addFragment(new albums(), "Albums");
 		mSectionsPagerAdapter.addFragment(new songs(), "Songs");
-		mSectionsPagerAdapter.addFragment(new favorites(), "favorites");
+		mSectionsPagerAdapter.addFragment(new favorites(), "Favorite Songs");
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.container);
