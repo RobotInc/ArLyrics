@@ -184,6 +184,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		try {
 			player.reset();
 			player.setDataSource(download);
+			Log.i("source",download);
 			currentPlayingSong = name;
 			context = presetContext;
 			dialog = new ProgressDialog(presetContext);

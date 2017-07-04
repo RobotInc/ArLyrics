@@ -193,6 +193,7 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 			}
 
 		}
+		filtered = songlist;
 		setPlayList();
 		adapter.notifyDataSetChanged();
 
