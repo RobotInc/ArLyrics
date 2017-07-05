@@ -10,7 +10,7 @@ import android.widget.TextView;
  */
 
 
-public class degitalText extends TextView {
+public class degitalText extends android.support.v7.widget.AppCompatTextView {
 
 	public degitalText(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
