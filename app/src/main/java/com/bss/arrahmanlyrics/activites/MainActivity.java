@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity
 		} else {
 			Toast.makeText(getApplicationContext(), "App needs you to login to work smoothly open the app again and login with google account", Toast.LENGTH_LONG).show();
 
-			finish();
+
 		}
 	}
 
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity
 							Log.w("Sign in", "signInWithCredential", task.getException());
 							Toast.makeText(MainActivity.this, "Authentication failed. Please Check your Internet Connection and Open the app again...",
 									Toast.LENGTH_LONG).show();
-							finish();
+
 						}
 						// ...
 					}
