@@ -31,6 +31,7 @@ import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.Fragments.albums;
 import com.bss.arrahmanlyrics.Fragments.songs;
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.utils.RoundedTransformation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity
 		View view = navigationView.getHeaderView(0);
 		userEmailId = (TextView) view.findViewById(R.id.email);
 
-		Typeface english = Typeface.createFromAsset(getResources().getAssets(),"english.ttf");
+		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
 		userEmailId.setTypeface(english);
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -115,7 +116,7 @@ public class MainActivity extends AppCompatActivity
 				.build();
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.enableAutoManage(this , new GoogleApiClient.OnConnectionFailedListener() {
+				.enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
 					@Override
 					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -138,21 +139,6 @@ public class MainActivity extends AppCompatActivity
 
 
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		// Handle action bar item clicks here. The action bar will
-		// automatically handle clicks on the Home/Up button, so long
-		// as you specify a parent activity in AndroidManifest.xml.
-		int id = item.getItemId();
-
-		//noinspection SimplifiableIfStatement
-		if (id == R.id.action_settings) {
-
-			return true;
-		}
-
-		return super.onOptionsItemSelected(item);
-	}
 
 
 	@SuppressWarnings("StatementWithEmptyBody")
@@ -161,16 +147,7 @@ public class MainActivity extends AppCompatActivity
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 
-		if (id == R.id.nav_camera) {
-
-			// Handle the camera action
-		} else if (id == R.id.nav_gallery) {
-
-		} else if (id == R.id.nav_slideshow) {
-
-		} else if (id == R.id.nav_manage) {
-
-		} else if (id == R.id.nav_log) {
+		if (id == R.id.nav_log) {
 			mFirebaseAuth.signOut();
 			Auth.GoogleSignInApi.signOut(mGoogleApiClient);
 
@@ -209,7 +186,6 @@ public class MainActivity extends AppCompatActivity
 			Log.i("user Name", acct.getDisplayName());
 
 
-
 			firebaseAuthWithGoogle(acct);
 
 
@@ -236,6 +212,7 @@ public class MainActivity extends AppCompatActivity
 						// the auth state listener will be notified and logic to handle the
 						// signed in user can be handled in the listener.
 						FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+						mainApp.setUser(currentUser);
 						userEmailId.setText(currentUser.getEmail());
 						if (!task.isSuccessful()) {
 							Log.w("Sign in", "signInWithCredential", task.getException());
@@ -298,17 +275,17 @@ public class MainActivity extends AppCompatActivity
 	}
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-	    FirebaseUser user = mFirebaseAuth.getCurrentUser();
-	    if(user == null){
-		    signIn();
-	    }else {
-		    userEmailId.setText(user.getEmail());
-	    }
-    }
-
+	@Override
+	public void onStart() {
+		super.onStart();
+		FirebaseUser user = mFirebaseAuth.getCurrentUser();
+		if (user == null) {
+			signIn();
+		} else {
+			mainApp.setUser(user);
+			userEmailId.setText(user.getEmail());
+		}
+	}
 
 
 }

@@ -39,6 +39,8 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name, lyricist;
         ImageView dots;
+        ImageView eq;
+
         CircularImageView imageView;
 
 
@@ -48,6 +50,7 @@ public class fragmentSongAdapter extends RecyclerView.Adapter<fragmentSongAdapte
             lyricist = (TextView) view.findViewById(R.id.Songlyricist);
             dots = (ImageButton) view.findViewById(R.id.menu_button);
             imageView = (CircularImageView) view.findViewById(R.id.songCover);
+            eq = (ImageView) view.findViewById(R.id.eq);
 
 
             //albumCover = (ImageView) view.findViewById(R.id.album_artwork);

@@ -51,7 +51,7 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:text="SONG TITLE"
-            android:textColor="#000000"
+            android:textColor="#ffffff"
             android:textSize="16sp"/>
 
         <com.bss.arrahmanlyrics.utils.lyricsTextView
@@ -63,11 +63,18 @@
             android:maxLines="1"
             android:paddingTop="4dp"
             android:text="SONG ARTIST"
-            android:textColor="#5d5858"
+            android:textColor="#4590fa"
             android:textSize="14sp"/>
 
     </LinearLayout>
-
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@null"
+        android:id="@+id/eq"
+        android:backgroundTintMode="src_in"
+        android:tint="@null"
+        android:src="@drawable/ic_equalizer1_white_36dp"/>
     <ImageButton
         android:id="@+id/favmenu_button"
         android:layout_width="wrap_content"

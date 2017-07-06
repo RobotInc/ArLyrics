@@ -223,5 +223,9 @@ public class songList extends Fragment {
 
 	}
 
-
+	@Override
+	public void onResume() {
+		super.onResume();
+		Toast.makeText(getContext(),"scroll ",Toast.LENGTH_LONG).show();
+	}
 }
