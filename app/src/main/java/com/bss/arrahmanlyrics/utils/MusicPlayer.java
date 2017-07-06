@@ -20,6 +20,7 @@ import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.Fragments.EnglishLyrics;
 import com.bss.arrahmanlyrics.Fragments.OtherLyrics;
+import com.bss.arrahmanlyrics.Fragments.songList;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.models.Song;
@@ -67,6 +68,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	int resumePosition;
 	boolean shuffle = true, repeat = false;
 	EnglishLyrics enLyrics;
+	songList songListFragment;
 	List<Song> randomList;
 	List<Song> currentList;
 	OtherLyrics oLyrics;
@@ -166,10 +168,11 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		currentList = randomList;
 	}
 
-	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, ImageView favorites, EnglishLyrics enLyrics, OtherLyrics oLyrics, ImageView cover) {
+	public void setPlay(String name, String moiveName, SeekBar bar, TextView totalDur, Context presetContext, ImageView playButton, ImageView favorites, EnglishLyrics enLyrics, OtherLyrics oLyrics,songList songListFragment, ImageView cover) {
 		String download = "";
 		this.enLyrics = enLyrics;
 		this.bar = bar;
+		this.songListFragment = songListFragment;
 		this.totalDur = totalDur;
 		this.Movie = moiveName;
 		this.oLyrics = oLyrics;
@@ -213,6 +216,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	public void play() {
 		if (player.getDuration() > 0) {
 			player.start();
+			songListFragment.scrollTo(currentPlayingSong);
 			bar.setMax((int) player.getDuration());
 
 			bar.setProgress(getCurrentPosition());
@@ -671,4 +675,8 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 		return false;
 
 	}
+	public String getCurrentPlayingSong(){
+		return currentPlayingSong;
+	}
+
 }

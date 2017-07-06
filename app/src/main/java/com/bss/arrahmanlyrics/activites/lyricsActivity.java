@@ -14,10 +14,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -60,12 +62,14 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	List<Song> passedList;
 	EnglishLyrics enLyrics;
 	OtherLyrics oLyrics;
+	songList songListFragment;
 	HashMap<String,Object> manualSong;
 	boolean toggleFavorite = false;
 	ImageView cover;
 	ImageButton search;
 	SmallBang bang;
 	EditText searchBar;
+	LinearLayout topView;
 
 	//MusicPlayer mainApp.getPlayer();
 
@@ -84,10 +88,19 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		//songlistView = (RecyclerView) findViewById(R.id.fastsonglist);
 		enLyrics = new EnglishLyrics();
 		oLyrics = new OtherLyrics();
+		songListFragment = new songList();
 		section = new SectionsPagerAdapter(getSupportFragmentManager());
-		section.addFragment(new songList(), "Song List");
+		section.addFragment(songListFragment, "Song List");
 		section.addFragment(enLyrics, "English Lyrics");
 		section.addFragment(oLyrics, "Other Lyrics");
+		topView = (LinearLayout) findViewById(R.id.topView);
+		topView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				songListFragment.scrollTo(mainApp.getPlayer().getCurrentPlayingSong());
+				return false;
+			}
+		});
 		//songList = new ArrayList<>();
 		passedList = getIntent().getExtras().getParcelableArrayList("list");
 		search = (ImageButton) findViewById(R.id.search_song);
@@ -236,7 +249,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		}*/
 
 		mainApp.getPlayer().setPlayList(passedList);
-		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,favorite,enLyrics,oLyrics,cover);
+		mainApp.getPlayer().setPlay(songTitle,movieName, bar, totalDur,lyricsActivity.this,play,favorite,enLyrics,oLyrics,songListFragment,cover);
 		//setLyricsManually(movieName,songTitle);
 
 		//play.setImageResource(R.drawable.ic_action_pause);

@@ -127,6 +127,7 @@ public class songList extends Fragment {
 		customLayoutManager.setSmoothScrollbarEnabled(true);
 		songlistView.setThumbColor(Color.parseColor("#a000ffae"));
 		songlistView.setLayoutManager(customLayoutManager);
+
 		songlistView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
 			@Override
 			public void onItemClick(View view, int position) {
@@ -227,5 +228,17 @@ public class songList extends Fragment {
 	public void onResume() {
 		super.onResume();
 		Toast.makeText(getContext(),"scroll ",Toast.LENGTH_LONG).show();
+	}
+
+	public void scrollTo(String songTitle){
+		Log.e("size",String.valueOf(songsListArray.size()));
+		for(songWithTitle song : songsListArray){
+			if(song.getSongTitle().equals(songTitle)){
+				int index = songsListArray.indexOf(song);
+				songlistView.scrollToPosition(index);
+				break;
+			}
+		}
+
 	}
 }
