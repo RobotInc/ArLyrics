@@ -72,7 +72,6 @@ public class songList extends Fragment {
 	List<Song> passedList;
 	List<songWithTitle> songsListArray;
 	lyricsActivity activity;
-	ImageButton search;
 
 	HashMap<String, Object> values;
 	DatabaseReference songref;

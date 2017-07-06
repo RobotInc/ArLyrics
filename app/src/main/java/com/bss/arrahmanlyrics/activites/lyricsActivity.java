@@ -28,8 +28,6 @@ import com.bss.arrahmanlyrics.Fragments.songList;
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.mainApp;
 import com.bss.arrahmanlyrics.models.Song;
-import com.bss.arrahmanlyrics.models.songUlr;
-import com.bss.arrahmanlyrics.models.songWithTitle;
 import com.bss.arrahmanlyrics.utils.ArtworkUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
