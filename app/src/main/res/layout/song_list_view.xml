@@ -63,7 +63,7 @@
             android:maxLines="1"
             android:paddingTop="4dp"
             android:text="SONG ARTIST"
-            android:textColor="#e0dfdf"
+            android:textColor="#ffffff"
             android:textSize="14sp"/>
 
     </LinearLayout>
