@@ -21,7 +21,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -31,7 +30,7 @@ import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.Fragments.albums;
 import com.bss.arrahmanlyrics.Fragments.songs;
 import com.bss.arrahmanlyrics.R;
-import com.bss.arrahmanlyrics.utils.RoundedTransformation;
+
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -45,7 +44,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.squareup.picasso.Picasso;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -94,7 +93,7 @@ public class MainActivity extends AppCompatActivity
 		View view = navigationView.getHeaderView(0);
 		userEmailId = (TextView) view.findViewById(R.id.email);
 
-		Typeface english = Typeface.createFromAsset(getResources().getAssets(),"english.ttf");
+		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
 		userEmailId.setTypeface(english);
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
@@ -115,7 +114,7 @@ public class MainActivity extends AppCompatActivity
 				.build();
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.enableAutoManage(this , new GoogleApiClient.OnConnectionFailedListener() {
+				.enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
 					@Override
 					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -123,7 +122,6 @@ public class MainActivity extends AppCompatActivity
 				} /* OnConnectionFailedListener */)
 				.addApi(Auth.GOOGLE_SIGN_IN_API, gso)
 				.build();
-
 	}
 
 	@Override
@@ -134,6 +132,7 @@ public class MainActivity extends AppCompatActivity
 		} else {
 			super.onBackPressed();
 		}
+
 	}
 
 
@@ -158,25 +157,6 @@ public class MainActivity extends AppCompatActivity
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
-		// Handle navigation view item clicks here.
-		int id = item.getItemId();
-
-		if (id == R.id.nav_camera) {
-
-			// Handle the camera action
-		} else if (id == R.id.nav_gallery) {
-
-		} else if (id == R.id.nav_slideshow) {
-
-		} else if (id == R.id.nav_manage) {
-
-		} else if (id == R.id.nav_log) {
-			mFirebaseAuth.signOut();
-			Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-
-			signIn();
-
-		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
@@ -207,7 +187,6 @@ public class MainActivity extends AppCompatActivity
 			// Signed in successfully, show authenticated UI.
 			GoogleSignInAccount acct = result.getSignInAccount();
 			Log.i("user Name", acct.getDisplayName());
-
 
 
 			firebaseAuthWithGoogle(acct);
@@ -298,17 +277,19 @@ public class MainActivity extends AppCompatActivity
 	}
 
 
-    @Override
-    public void onStart() {
-        super.onStart();
-	    FirebaseUser user = mFirebaseAuth.getCurrentUser();
-	    if(user == null){
-		    signIn();
-	    }else {
-		    userEmailId.setText(user.getEmail());
-	    }
-    }
-
-
-
+	@Override
+	public void onStart() {
+		super.onStart();
+		FirebaseUser user = mFirebaseAuth.getCurrentUser();
+		if (user == null) {
+			signIn();
+		} else {
+			userEmailId.setText(user.getEmail());
+		}
+	}
 }
+
+
+
+
+

@@ -2,7 +2,11 @@ package com.bss.arrahmanlyrics;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Handler;
+import android.widget.Toast;
+
 
 import com.bss.arrahmanlyrics.utils.MusicPlayer;
 import com.bss.arrahmanlyrics.utils.mediaCache;
@@ -18,6 +22,7 @@ public class mainApp extends Application {
     private static MusicPlayer player;
     private HttpProxyCacheServer proxy;
 
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -25,7 +30,7 @@ public class mainApp extends Application {
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         mContext = this;
         player = new MusicPlayer(mContext);
-        
+
     }
 
     // Called by the system when the device configuration changes while your component is running.
@@ -43,12 +48,11 @@ public class mainApp extends Application {
         super.onLowMemory();
     }
 
-    public static Context getContext()
-    {
+    public static Context getContext() {
         return mContext;
     }
 
-    public static MusicPlayer getPlayer(){
+    public static MusicPlayer getPlayer() {
         return player;
     }
 
@@ -62,4 +66,6 @@ public class mainApp extends Application {
                 .cacheDirectory(mediaCache.getVideoCacheDir(this))
                 .build();
     }
+
+
 }
