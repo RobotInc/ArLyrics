@@ -77,18 +77,17 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/menu_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+        <ImageView
+            android:id="@+id/favorite_button"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="bottom"
+
             android:layout_weight="0"
-            android:background="@drawable/ripple"
+
             android:paddingLeft="4dp"
             android:paddingRight="4dp"
-            android:tint="@android:color/white"
-            android:visibility="gone"
-            app:srcCompat="@drawable/ic_menu"/>
+            app:srcCompat="@drawable/ic_action_favorite"/>
     </LinearLayout>
 
 

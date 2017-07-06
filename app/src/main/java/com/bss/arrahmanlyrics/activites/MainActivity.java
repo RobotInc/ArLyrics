@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -31,7 +32,10 @@ import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.Fragments.albums;
 import com.bss.arrahmanlyrics.Fragments.songs;
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.mainApp;
+import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.utils.RoundedTransformation;
+import com.bss.arrahmanlyrics.utils.SharedPreference;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -45,6 +49,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -52,12 +58,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 	GoogleApiClient mGoogleApiClient;
 	private FirebaseAuth mFirebaseAuth;
+	private FirebaseUser user;
 	private FirebaseAuth.AuthStateListener mAuthListener;
 	ImageView profileImage;
 	TextView userName, userEmailId;
@@ -94,19 +102,20 @@ public class MainActivity extends AppCompatActivity
 		View view = navigationView.getHeaderView(0);
 		userEmailId = (TextView) view.findViewById(R.id.email);
 
-		Typeface english = Typeface.createFromAsset(getResources().getAssets(),"english.ttf");
+		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
 		userEmailId.setTypeface(english);
 		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 		mSectionsPagerAdapter.addFragment(new albums(), "Albums");
 		mSectionsPagerAdapter.addFragment(new songs(), "Songs");
-		mSectionsPagerAdapter.addFragment(new favorites(), "Favorite Songs");
+		mSectionsPagerAdapter.addFragment(new favorites(), "Fav. Songs");
 
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.container);
-		mViewPager.setOffscreenPageLimit(3);
+		mViewPager.setOffscreenPageLimit(1);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 		TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+
 		tabLayout.setupWithViewPager(mViewPager);
 		mFirebaseAuth = FirebaseAuth.getInstance();
 		GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -115,7 +124,7 @@ public class MainActivity extends AppCompatActivity
 				.build();
 
 		mGoogleApiClient = new GoogleApiClient.Builder(this)
-				.enableAutoManage(this , new GoogleApiClient.OnConnectionFailedListener() {
+				.enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
 					@Override
 					public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
@@ -124,6 +133,14 @@ public class MainActivity extends AppCompatActivity
 				.addApi(Auth.GOOGLE_SIGN_IN_API, gso)
 				.build();
 
+		user = mFirebaseAuth.getCurrentUser();
+		/*DatabaseReference userRef = FirebaseDatabase.getInstance().getReference();
+		SharedPreference sp = new SharedPreference();
+		List<Song> favoriteList = new ArrayList<>();
+		favoriteList = sp.getFavorites(getApplicationContext());
+		HashMap<String, Object> list = new HashMap<>();
+		list.put("Song", favoriteList);
+		userRef.child(user.getUid()).updateChildren(list);*/
 	}
 
 	@Override
@@ -236,6 +253,7 @@ public class MainActivity extends AppCompatActivity
 						// the auth state listener will be notified and logic to handle the
 						// signed in user can be handled in the listener.
 						FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+						mainApp.setUser(currentUser);
 						userEmailId.setText(currentUser.getEmail());
 						if (!task.isSuccessful()) {
 							Log.w("Sign in", "signInWithCredential", task.getException());
@@ -305,6 +323,7 @@ public class MainActivity extends AppCompatActivity
 	    if(user == null){
 		    signIn();
 	    }else {
+		    mainApp.setUser(user);
 		    userEmailId.setText(user.getEmail());
 	    }
     }

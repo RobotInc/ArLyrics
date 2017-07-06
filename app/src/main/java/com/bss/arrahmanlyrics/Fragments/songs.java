@@ -114,7 +114,7 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 		View rootView = inflater.inflate(R.layout.fragment_songs, container, false);
 		setHasOptionsMenu(true);
 		dialog = new ProgressDialog(getContext());
-		dialog.setMessage("Loading Album");
+		dialog.setMessage("Loading Songs");
 		dialog.show();
 		songlist = new ArrayList<>();
 		passedList = new ArrayList<>();

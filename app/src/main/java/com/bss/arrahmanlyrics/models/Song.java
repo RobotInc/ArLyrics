@@ -3,6 +3,10 @@ package com.bss.arrahmanlyrics.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.firebase.database.Exclude;
+
+import java.util.HashMap;
+
 /**
  * Created by mohan on 5/20/17.
  */
@@ -84,5 +88,17 @@ public class Song implements Parcelable{
 
     public void setMovieTitle(String movieTitle) {
         MovieTitle = movieTitle;
+    }
+
+    @Exclude
+    public HashMap<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("Movie",MovieTitle);
+        result.put("Song",songTitle);
+        result.put("Lyricist", lyricistNames);
+        result.put("URL", ulr);
+
+
+        return result;
     }
 }

@@ -45,6 +45,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
+import xyz.hanks.library.SmallBang;
+
 public class lyricsActivity extends AppCompatActivity implements ImageView.OnClickListener {
 	DatabaseReference imageRef;
 	DatabaseReference songRef;
@@ -64,6 +66,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 	boolean toggleFavorite = false;
 	ImageView cover;
 	ImageButton search;
+	SmallBang bang;
 	EditText searchBar;
 
 	//MusicPlayer mainApp.getPlayer();
@@ -77,6 +80,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 		overridePendingTransition(R.anim.slide_in_up, R.anim.fade_back);
 		getWindow().setStatusBarColor(Color.parseColor("#a000ffae"));
 		links = new HashMap<>();
+		bang = SmallBang.attach2Window(this);
 		lyricsPager = (ViewPager) findViewById(R.id.lyricsPager);
 		//slidingpanel = (SlidingPaneLayout) findViewById(R.id.slidingpanelayout);
 		//songlistView = (RecyclerView) findViewById(R.id.fastsonglist);
@@ -380,19 +384,23 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 			case R.id.shuffle_song: {
 				mainApp.getPlayer().shuffle();
 				if(mainApp.getPlayer().getShuffle()){
+					bang.bang(v);
 					shuffle.setImageResource(R.drawable.shuffleon);
 				}else {
+					bang.bang(v);
 					shuffle.setImageResource(R.drawable.shuffle);
 				}
 				break;
 			}
 			case R.id.favorite: {
-				if(toggleFavorite){
-					toggleFavorite = false;
+				if(mainApp.getPlayer().checkFavoriteItem()){
+					mainApp.getPlayer().removeFavorites();
+					bang.bang(v);
 					favorite.setImageResource(R.drawable.ic_action_favorite);
 					//mainApp.getPlayer().removeFavorites();
 				}else {
-					toggleFavorite = true;
+					mainApp.getPlayer().addFavorites();
+					bang.bang(v);
 					favorite.setImageResource(R.drawable.ic_action_favorite_on);
 					//mainApp.getPlayer().addFavorites();
 
