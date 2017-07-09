@@ -16,6 +16,8 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.mainApp;
 
 import com.bss.arrahmanlyrics.models.Song;
@@ -41,47 +43,7 @@ public class SharedPreference {
 
 	public SharedPreference() {
 		super();
-		if(mainApp.getUser() == null){
-			user = FirebaseAuth.getInstance().getCurrentUser();
-		}else {
-			user = mainApp.getUser();
-		}
 
-		Log.e("user", String.valueOf(user.getUid()));
-		songlist = new ArrayList<>();
-		Favorites = new HashMap<>();
-		userRef = FirebaseDatabase.getInstance().getReference();
-
-		userRef.child(user.getUid()).child("Fav Songs").addValueEventListener(new ValueEventListener() {
-			@Override
-			public void onDataChange(DataSnapshot dataSnapshot) {
-				movies = (HashMap<String, Object>) dataSnapshot.getValue();
-				Favorites.clear();
-				if (movies != null) {
-					for (String movie : movies.keySet()) {
-
-						HashMap<String, Object> songs = (HashMap<String, Object>) movies.get(movie);
-
-						songlist.clear();
-						for (String song : songs.keySet()) {
-
-							songlist.add(song);
-						}
-
-						Favorites.put(movie, (ArrayList<String>) songlist.clone());
-					}
-
-
-				}
-
-			}
-
-
-			@Override
-			public void onCancelled(DatabaseError databaseError) {
-
-			}
-		});
 
 	}
 
@@ -107,37 +69,41 @@ public class SharedPreference {
 
 	}*/
 
-	public void addFavorite(String movieTitle, String songTitle) {
-
-		if (Favorites.containsKey(movieTitle)) {
-			if (Favorites.get(movieTitle).contains(songTitle)) {
-				return;
+	public void addFavorite(String movieTitle, String songTitle, FirebaseUser user) {
+		if (Favorites != null) {
+			if (Favorites.containsKey(movieTitle)) {
+				if (Favorites.get(movieTitle).contains(songTitle)) {
+					return;
+				}
 			}
-		} else {
-			HashMap<String, Object> map = new HashMap<>();
-			map.put(songTitle, songTitle);
-
-			userRef.child(user.getUid()).child("Fav Songs").child(movieTitle).updateChildren(map);
 		}
+
+		HashMap<String, Object> map = new HashMap<>();
+		map.put(songTitle, songTitle);
+		DatabaseReference userRef = FirebaseDatabase.getInstance().getReference();
+		userRef.child(user.getUid()).child("Fav Songs").child(movieTitle).updateChildren(map);
 
 	}
 
 
-	public void removeFavorite(String movieTitle, String songTitle) {
+	public void removeFavorite(String movieTitle, String songTitle, FirebaseUser user) {
 		Log.e("removeFavorite", songTitle + " " + movieTitle);
-		if (Favorites.containsKey(movieTitle)) {
-			if (Favorites.get(movieTitle).contains(songTitle)) {
-				HashMap<String, Object> map = new HashMap<>();
-				map.put(songTitle, songTitle);
+		if (Favorites != null) {
+			if (Favorites.containsKey(movieTitle)) {
+				if (Favorites.get(movieTitle).contains(songTitle)) {
+					HashMap<String, Object> map = new HashMap<>();
+					map.put(songTitle, songTitle);
+					DatabaseReference userRef = FirebaseDatabase.getInstance().getReference();
+					userRef.child(user.getUid()).child("Fav Songs").child(movieTitle).child(songTitle).removeValue(new DatabaseReference.CompletionListener() {
+						@Override
+						public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
-				userRef.child(user.getUid()).child("Fav Songs").child(movieTitle).child(songTitle).removeValue(new DatabaseReference.CompletionListener() {
-					@Override
-					public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
-
-					}
-				});
+						}
+					});
+				}
 			}
 		}
+
 	}
 
 	public HashMap<String, ArrayList<String>> getFavorites() {
@@ -161,4 +127,13 @@ public class SharedPreference {
 		return (ArrayList<Song>) favorites;*/
 		return Favorites;
 	}
+
+	public void setFavorites(HashMap<String, ArrayList<String>> Favorites) {
+
+		this.Favorites = Favorites;
+
+
+	}
+
+
 }

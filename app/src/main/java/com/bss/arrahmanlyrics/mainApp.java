@@ -19,7 +19,7 @@ public class mainApp extends Application {
     private static Context mContext;
     private static MusicPlayer player;
     private HttpProxyCacheServer proxy;
-    private static FirebaseUser user;
+
     private static SharedPreference sp;
     @Override
     public void onCreate() {
@@ -65,14 +65,7 @@ public class mainApp extends Application {
                 .cacheDirectory(mediaCache.getVideoCacheDir(this))
                 .build();
     }
-    public static SharedPreference getsp(){
+    public static SharedPreference getSp(){
         return sp;
-    }
-    public static FirebaseUser getUser(){
-        return user;
-    }
-
-    public static void setUser(FirebaseUser user1){
-        user = user1;
     }
 }

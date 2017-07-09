@@ -32,6 +32,7 @@
         <activity
             android:name=".activites.lyricsActivity"
             android:screenOrientation="portrait"
+            android:parentActivityName=".activites.MainActivity"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
     </application>

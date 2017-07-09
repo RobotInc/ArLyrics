@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.activites.MainActivity;
 import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.favoriteFragmentSongAdapter;
 import com.bss.arrahmanlyrics.adapter.mainFragmentSongAdapter;
@@ -32,6 +33,8 @@ import com.bss.arrahmanlyrics.utils.CustomLayoutManager;
 import com.bss.arrahmanlyrics.utils.DividerItemDecoration;
 import com.bss.arrahmanlyrics.utils.RecyclerItemClickListener;
 import com.bss.arrahmanlyrics.utils.SharedPreference;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -65,6 +68,7 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 	private OnFragmentInteractionListener mListener;
 	FastScrollRecyclerView songlistView;
 	List<songWithTitle> songlist;
+
 	List<songWithTitle> filtered;
 	ArrayList<Song> favoriteList;
 	HashMap<String, ArrayList<String>> favorites;
@@ -74,6 +78,7 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 	ProgressDialog dialog;
 	SearchView searchView;
 
+	View view;
 
 	public favorites() {
 		// Required empty public constructor
@@ -104,6 +109,11 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 			mParam1 = getArguments().getString(ARG_PARAM1);
 			mParam2 = getArguments().getString(ARG_PARAM2);
 		}
+
+		setHasOptionsMenu(true);
+
+
+
 	}
 
 	@Override
@@ -111,14 +121,12 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 	                         Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
 		View view = inflater.inflate(R.layout.fragment_favorites, container, false);
-		setHasOptionsMenu(true);
 
-		dialog = new ProgressDialog(getContext());
-		dialog.setMessage("Loading Favorite Songs");
-		dialog.show();
 		songlist = new ArrayList<>();
+
 		filtered = new ArrayList<>();
-		favorites = mainApp.getsp().getFavorites();
+		values = ((MainActivity)getActivity()).getValues();
+		favorites = new HashMap<>();
 		favoriteList = new ArrayList<>();
 		adapter = new favoriteFragmentSongAdapter(getContext(), songlist);
 		songlistView = (FastScrollRecyclerView) view.findViewById(R.id.favoriteSongPlayList);
@@ -127,7 +135,7 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 		customLayoutManager.setSmoothScrollbarEnabled(true);
 		songlistView.setLayoutManager(customLayoutManager);
 
-		songlistView.addItemDecoration(new DividerItemDecoration(getContext(), 75, false));
+		songlistView.addItemDecoration(new DividerItemDecoration(getContext(), 75, true));
 		songlistView.addOnItemTouchListener(new RecyclerItemClickListener(getContext(), new RecyclerItemClickListener.OnItemClickListener() {
 			@Override
 			public void onItemClick(View view, int position) {
@@ -147,17 +155,44 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 
 			}
 		}));
-
-		songref = FirebaseDatabase.getInstance().getReference();
-
-		songref.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
+		DatabaseReference userRef = FirebaseDatabase.getInstance().getReference();
+		userRef.keepSynced(true);
+		userRef.child(((MainActivity)getActivity()).user.getUid()).addValueEventListener(new ValueEventListener() {
 			@Override
 			public void onDataChange(DataSnapshot dataSnapshot) {
-				values = (HashMap<String, Object>) dataSnapshot.getValue();
+				if(dataSnapshot.exists()){
+					Toast("am inisde datashot");
+					HashMap<String,Object> fav = (HashMap<String, Object>) dataSnapshot.getValue();
+					HashMap<String,Object> movies = (HashMap<String, Object>) fav.get("Fav Songs");
+					ArrayList<String> Favsonglist = new ArrayList<String>();
+					favorites.clear();
+					if (movies != null) {
+						for (String movie : movies.keySet()) {
 
-				prepareSongList();
-				adapter.notifyDataSetChanged();
-				dialog.hide();
+							HashMap<String, Object> songs = (HashMap<String, Object>) movies.get(movie);
+
+							Favsonglist.clear();
+							for (String song : songs.keySet()) {
+
+								Favsonglist.add(song);
+							}
+
+							favorites.put(movie, (ArrayList<String>) Favsonglist.clone());
+						}
+
+						mainApp.getSp().setFavorites(favorites);
+						songlist.clear();
+						favoriteList.clear();
+						filtered.clear();
+
+						prepareSongList();
+
+					}
+				}else {
+					songlist.clear();
+					favoriteList.clear();
+					adapter.notifyDataSetChanged();
+				}
 			}
 
 			@Override
@@ -165,13 +200,20 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 
 			}
 		});
+
+
 		adapter.notifyDataSetChanged();
 		return view;
 
 	}
 
+
+
 	private void prepareSongList() {
-		favoriteList.clear();
+		if(favoriteList !=null){
+			favoriteList.clear();
+		}
+
 
 		if (favorites != null) {
 			for (String movies : favorites.keySet()) {
@@ -295,40 +337,18 @@ public class favorites extends Fragment implements SearchView.OnQueryTextListene
 	@Override
 	public void onPause() {
 		super.onPause();
-		dialog.dismiss();
+		//dialog.dismiss();
 	}
 
 	@Override
 	public void onResume() {
 		super.onResume();
-		if (favorites != null) {
-			favorites = mainApp.getsp().getFavorites();
-			setDatabaseValues();
-		}
+
+
 
 	}
-
-	public void setDatabaseValues() {
-		songref = FirebaseDatabase.getInstance().getReference();
-
-		songref.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
-			@Override
-			public void onDataChange(DataSnapshot dataSnapshot) {
-				values = (HashMap<String, Object>) dataSnapshot.getValue();
-
-				prepareSongList();
-				adapter.notifyDataSetChanged();
-				if (dialog.isShowing()) {
-					dialog.hide();
-				}
-
-			}
-
-			@Override
-			public void onCancelled(DatabaseError databaseError) {
-
-			}
-		});
+	public void Toast(String message){
+		Toast.makeText(getContext(),message,Toast.LENGTH_SHORT).show();
 	}
 
 }

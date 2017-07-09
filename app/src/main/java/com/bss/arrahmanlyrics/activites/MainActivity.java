@@ -1,10 +1,13 @@
 package com.bss.arrahmanlyrics.activites;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -46,6 +49,11 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -53,6 +61,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -62,10 +71,14 @@ public class MainActivity extends AppCompatActivity
 	private FirebaseAuth.AuthStateListener mAuthListener;
 	ImageView profileImage;
 	TextView userName, userEmailId;
+	public HashMap<String, Object> values = new HashMap<>();
+	DatabaseReference data;
 	Toolbar toolbar;
 	private SectionsPagerAdapter mSectionsPagerAdapter;
 	private ViewPager mViewPager;
-
+	ProgressDialog dialog;
+	public FirebaseUser user;
+	HashMap<String, Object> movies;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,25 +103,7 @@ public class MainActivity extends AppCompatActivity
 		drawer.setDrawerListener(toggle);
 		toggle.syncState();
 
-		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-		navigationView.setNavigationItemSelectedListener(this);
-		View view = navigationView.getHeaderView(0);
-		userEmailId = (TextView) view.findViewById(R.id.email);
 
-		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
-		userEmailId.setTypeface(english);
-		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-		mSectionsPagerAdapter.addFragment(new albums(), "Albums");
-		mSectionsPagerAdapter.addFragment(new songs(), "Songs");
-		mSectionsPagerAdapter.addFragment(new favorites(), "Favorite Songs");
-
-		// Set up the ViewPager with the sections adapter.
-		mViewPager = (ViewPager) findViewById(R.id.container);
-		mViewPager.setOffscreenPageLimit(3);
-		mViewPager.setAdapter(mSectionsPagerAdapter);
-		TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-		tabLayout.setupWithViewPager(mViewPager);
 		mFirebaseAuth = FirebaseAuth.getInstance();
 		GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
 				.requestIdToken(getString(R.string.default_web_client_id))
@@ -125,7 +120,18 @@ public class MainActivity extends AppCompatActivity
 				.addApi(Auth.GOOGLE_SIGN_IN_API, gso)
 				.build();
 
+		user = mFirebaseAuth.getCurrentUser();
+
+
+		if (user != null) {
+			initUI();
+		} else {
+			signIn();
+		}
+
+
 	}
+
 
 	@Override
 	public void onBackPressed() {
@@ -138,9 +144,6 @@ public class MainActivity extends AppCompatActivity
 	}
 
 
-
-
-
 	@SuppressWarnings("StatementWithEmptyBody")
 	@Override
 	public boolean onNavigationItemSelected(MenuItem item) {
@@ -150,9 +153,7 @@ public class MainActivity extends AppCompatActivity
 		if (id == R.id.nav_log) {
 			mFirebaseAuth.signOut();
 			Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-
 			signIn();
-
 		}
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -199,7 +200,7 @@ public class MainActivity extends AppCompatActivity
 	private void firebaseAuthWithGoogle(final GoogleSignInAccount acct) {
 		Log.d("Sign in", "firebaseAuthWithGoogle:" + acct.getId());
 
-		AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+		final AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
 		mFirebaseAuth.signInWithCredential(credential)
 				.addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
 					@Override
@@ -211,9 +212,9 @@ public class MainActivity extends AppCompatActivity
 						// If sign in fails, display a message to the user. If sign in succeeds
 						// the auth state listener will be notified and logic to handle the
 						// signed in user can be handled in the listener.
-						FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
-						mainApp.setUser(currentUser);
-						userEmailId.setText(currentUser.getEmail());
+						user = mFirebaseAuth.getCurrentUser();
+						initUI();
+						userEmailId.setText(user.getEmail());
 						if (!task.isSuccessful()) {
 							Log.w("Sign in", "signInWithCredential", task.getException());
 							Toast.makeText(MainActivity.this, "Authentication failed. Please Check your Internet Connection and Open the app again...",
@@ -278,14 +279,62 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	public void onStart() {
 		super.onStart();
-		FirebaseUser user = mFirebaseAuth.getCurrentUser();
-		if (user == null) {
-			signIn();
-		} else {
-			mainApp.setUser(user);
-			userEmailId.setText(user.getEmail());
-		}
+
 	}
 
+	@Override
+	protected void onStop() {
+		super.onStop();
+	}
 
+	public HashMap<String, Object> getValues() {
+		return values;
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		dialog.dismiss();
+	}
+
+	void initUI() {
+		dialog = new ProgressDialog(this);
+		dialog.setMessage("Loading Database");
+		dialog.show();
+		data = FirebaseDatabase.getInstance().getReference();
+		data.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
+			@Override
+			public void onDataChange(DataSnapshot dataSnapshot) {
+				values = (HashMap<String, Object>) dataSnapshot.getValue();
+				mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+				mViewPager = (ViewPager) findViewById(R.id.container);
+				mViewPager.setOffscreenPageLimit(2);
+
+				mSectionsPagerAdapter.addFragment(new albums(), "Albums");
+				mSectionsPagerAdapter.addFragment(new songs(), "Songs");
+				mSectionsPagerAdapter.addFragment(new favorites(), "Favorite Songs");
+
+				mViewPager.setAdapter(mSectionsPagerAdapter);
+				// Set up the ViewPager with the sections adapter.
+
+				TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+				tabLayout.setupWithViewPager(mViewPager);
+				dialog.hide();
+
+			}
+
+			@Override
+			public void onCancelled(DatabaseError databaseError) {
+
+			}
+		});
+		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		navigationView.setNavigationItemSelectedListener(this);
+		View view = navigationView.getHeaderView(0);
+		userEmailId = (TextView) view.findViewById(R.id.email);
+		userEmailId.setText(user.getEmail());
+
+		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
+		userEmailId.setTypeface(english);
+	}
 }

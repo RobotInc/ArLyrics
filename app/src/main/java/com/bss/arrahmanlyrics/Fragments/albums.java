@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.activites.MainActivity;
 import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.albumAdapter;
 import com.bss.arrahmanlyrics.models.Album;
@@ -115,9 +116,7 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 		View rootView = inflater.inflate(R.layout.fragment_albums, container, false);
 		toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
 		setHasOptionsMenu(true);
-		dialog = new ProgressDialog(getContext());
-		dialog.setMessage("Loading Album");
-		dialog.show();
+
 		albumList = new ArrayList<>();
 		songWithTitleList = new ArrayList<>();
 		//filtedList = new ArrayList<>();
@@ -146,6 +145,9 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 			}
 		}));
 		loadGridView(2);
+		values = ((MainActivity)getActivity()).getValues();
+		prepareAlbums();
+		/*
 		albumData = FirebaseDatabase.getInstance().getReference();
 		albumData.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
 			@Override
@@ -163,7 +165,7 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 
 			}
 		});
-
+*/
 
 		//prepareAlbums();
 
@@ -298,7 +300,7 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 	@Override
 	public void onPause() {
 		super.onPause();
-		dialog.dismiss();
+
 	}
 
 	public Bitmap getBitmap(String imageString) {

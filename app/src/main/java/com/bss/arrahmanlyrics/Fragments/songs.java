@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
+import com.bss.arrahmanlyrics.activites.MainActivity;
 import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.fragmentSongAdapter;
 import com.bss.arrahmanlyrics.adapter.mainFragmentSongAdapter;
@@ -113,9 +114,7 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 		//return inflater.inflate(R.layout.fragment_songs, container, false);
 		View rootView = inflater.inflate(R.layout.fragment_songs, container, false);
 		setHasOptionsMenu(true);
-		dialog = new ProgressDialog(getContext());
-		dialog.setMessage("Loading Songs");
-		dialog.show();
+
 		songlist = new ArrayList<>();
 		passedList = new ArrayList<>();
 		adapter = new mainFragmentSongAdapter(getContext(), songlist);
@@ -145,7 +144,10 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 
 			}
 		}));
-		songref = FirebaseDatabase.getInstance().getReference();
+		values = ((MainActivity)getActivity()).getValues();
+		prepareSongList();
+
+		/*songref = FirebaseDatabase.getInstance().getReference();
 
 		songref.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
 			@Override
@@ -161,7 +163,7 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 			public void onCancelled(DatabaseError databaseError) {
 
 			}
-		});
+		});*/
 
 		return rootView;
 	}
@@ -282,7 +284,6 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 	@Override
 	public void onPause() {
 		super.onPause();
-		dialog.dismiss();
 	}
 
 	public List<songWithTitle> filterAlbum(List<songWithTitle> listsongs, String query) {

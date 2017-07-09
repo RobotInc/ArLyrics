@@ -27,6 +27,8 @@ import com.bss.arrahmanlyrics.models.Song;
 import com.bss.arrahmanlyrics.models.songUlr;
 import com.danikula.videocache.CacheListener;
 import com.danikula.videocache.HttpProxyCacheServer;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,14 +75,14 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	List<Song> currentList;
 	OtherLyrics oLyrics;
 	ImageView cover, favorites;
-	SharedPreference sp;
+
 
 	private boolean ongoingCall = false;
 
 
 	public MusicPlayer(Context context) {
 		this.context = context;
-		sp = new SharedPreference();
+
 		player = new MediaPlayer();
 		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
@@ -629,15 +631,17 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public void addFavorites() {
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-		sp.addFavorite(Movie, currentPlayingSong);
+		mainApp.getSp().addFavorite(Movie, currentPlayingSong,user);
 
 
 	}
 
 	public void removeFavorites() {
+		FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
-		sp.removeFavorite(Movie, currentPlayingSong);
+		mainApp.getSp().removeFavorite(Movie, currentPlayingSong,user);
 
 
 	}
@@ -645,7 +649,8 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	public boolean checkFavoriteItem(String albumName, String songName) {
 
 		//Song song = currentList.get(currentList.indexOf(Name));
-		HashMap<String, ArrayList<String>> favorites = sp.getFavorites();
+
+		HashMap<String, ArrayList<String>> favorites = mainApp.getSp().getFavorites();
 		if (favorites != null) {
 			if (favorites.containsKey(albumName)) {
 				if (favorites.get(albumName).contains(songName)) {
@@ -660,7 +665,7 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	}
 
 	public boolean checkFavoriteItem() {
-		HashMap<String, ArrayList<String>> favorites = sp.getFavorites();
+		HashMap<String, ArrayList<String>> favorites = mainApp.getSp().getFavorites();
 		if (favorites != null) {
 			if (favorites.containsKey(Movie)) {
 				if (favorites.get(Movie).contains(currentPlayingSong)) {
