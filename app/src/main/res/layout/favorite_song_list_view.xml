@@ -74,7 +74,7 @@
         android:id="@+id/eq"
         android:backgroundTintMode="src_in"
         android:tint="@null"
-        android:src="@drawable/ic_equalizer1_white_36dp"/>
+        />
     <ImageButton
         android:id="@+id/favmenu_button"
         android:layout_width="wrap_content"

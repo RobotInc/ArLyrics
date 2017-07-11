@@ -1,11 +1,11 @@
-<resources>
+<resources xmlns:hrefFacebook="http://schemas.android.com/tools">
     <string name="app_name">AR Rahman Lyrics</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-
+    <string name="server_client_id">1024619489733-h9ji3bc5d59nfrnd6vfj5qblm56llboq.apps.googleusercontent.com</string>
     <string name="action_settings">Settings</string>
-
+    <string name="feedback">Feedback</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_activity2">activity2</string>
@@ -102,4 +102,10 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
+
+    <string name="title_activity_feedback">feedback</string>
+    <string name="ok">OK</string>
+    <string name="title">About Us</string>
+    <string name="description">
+     Version: 1.01\nDescription:\nContact:\nFacebook:https://www.facebook.com/beyonityss</string>
 </resources>

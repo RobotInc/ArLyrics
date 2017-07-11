@@ -515,6 +515,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 
 
 		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
+		enLyrics.lyricsText2.setText(String.valueOf(builderEnglish));
 
 		final StringBuilder builderOther = new StringBuilder();
 		builderOther.append(manualSong.get("Others"));
@@ -522,6 +523,7 @@ public class lyricsActivity extends AppCompatActivity implements ImageView.OnCli
 
 
 		oLyrics.lyricsText.setText(String.valueOf(builderOther));
+		oLyrics.lyricsText2.setText(String.valueOf(builderOther));
 
 	}
 	public ImageButton getSearchButton(){

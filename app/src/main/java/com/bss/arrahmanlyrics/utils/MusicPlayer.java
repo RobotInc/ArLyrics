@@ -519,21 +519,23 @@ public class MusicPlayer implements MediaPlayer.OnBufferingUpdateListener, Media
 	void setLyrics(HashMap<String, Object> manualSong) {
 
 		final StringBuilder builderEnglish = new StringBuilder();
-		builderEnglish.append(manualSong.get("English"));
-		builderEnglish.append(manualSong.get("EnglishOne"));
+		//builderEnglish.append(manualSong.get("English"));
+		//builderEnglish.append(manualSong.get("EnglishOne"));
 
 		//Typeface english = Typeface.createFromAsset(enLyrics.getActivity().getAssets(), "english.ttf");
 
-		enLyrics.lyricsText.setText(String.valueOf(builderEnglish));
+		enLyrics.lyricsText.setText(String.valueOf(manualSong.get("English")));
+		enLyrics.lyricsText2.setText(String.valueOf(manualSong.get("EnglishOne")));
 		//enLyrics.lyricsText.setTypeface(english);
 
 		final StringBuilder builderOther = new StringBuilder();
-		builderOther.append(manualSong.get("Others"));
-		builderOther.append(manualSong.get("OthersOne"));
+		//builderOther.append(manualSong.get("Others"));
+		//builderOther.append(manualSong.get("OthersOne"));
 
 		//Typeface tamil = Typeface.createFromAsset(oLyrics.getActivity().getAssets(), "english.ttf");
 
-		oLyrics.lyricsText.setText(String.valueOf(builderOther));
+		oLyrics.lyricsText.setText(String.valueOf(manualSong.get("Others")));
+		oLyrics.lyricsText2.setText(String.valueOf(manualSong.get("OthersOne")));
 		//oLyrics.lyricsText.setTypeface(tamil);
 
 	}
