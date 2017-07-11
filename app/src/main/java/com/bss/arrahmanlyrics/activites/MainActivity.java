@@ -1,41 +1,41 @@
 package com.bss.arrahmanlyrics.activites;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
+import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.Fragments.albums;
+import com.bss.arrahmanlyrics.Fragments.favorites;
 import com.bss.arrahmanlyrics.Fragments.songs;
 import com.bss.arrahmanlyrics.R;
-import com.bss.arrahmanlyrics.mainApp;
-import com.bss.arrahmanlyrics.utils.RoundedTransformation;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -54,7 +54,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +62,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+
 
 public class MainActivity extends AppCompatActivity
 		implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -79,6 +80,7 @@ public class MainActivity extends AppCompatActivity
 	ProgressDialog dialog;
 	public FirebaseUser user;
 	HashMap<String, Object> movies;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,11 +99,11 @@ public class MainActivity extends AppCompatActivity
 			}
 		});
 
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		/*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 				this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 		drawer.setDrawerListener(toggle);
-		toggle.syncState();
+		toggle.syncState();*/
 
 
 		mFirebaseAuth = FirebaseAuth.getInstance();
@@ -128,19 +130,20 @@ public class MainActivity extends AppCompatActivity
 		} else {
 			signIn();
 		}
-
-
+		MobileAds.initialize(getApplicationContext(),
+				"ca-app-pub-3940256099942544~3347511713");
 	}
+
 
 
 	@Override
 	public void onBackPressed() {
-		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+		/*DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		if (drawer.isDrawerOpen(GravityCompat.START)) {
 			drawer.closeDrawer(GravityCompat.START);
 		} else {
 			super.onBackPressed();
-		}
+		}*/
 	}
 
 
@@ -158,6 +161,7 @@ public class MainActivity extends AppCompatActivity
 
 		DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		drawer.closeDrawer(GravityCompat.START);
+
 		return true;
 	}
 
@@ -171,11 +175,15 @@ public class MainActivity extends AppCompatActivity
 		super.onActivityResult(requestCode, resultCode, data);
 
 		// Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+
 		if (requestCode == 1) {
+			Log.e("test",String.valueOf(requestCode));
 			GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+
 			handleSignInResult(result);
 		} else {
 			Toast.makeText(getApplicationContext(), "App needs you to login to work smoothly open the app again and login with google account", Toast.LENGTH_LONG).show();
+			Log.e("bss test","singin failed");
 		}
 	}
 
@@ -214,7 +222,7 @@ public class MainActivity extends AppCompatActivity
 						// signed in user can be handled in the listener.
 						user = mFirebaseAuth.getCurrentUser();
 						initUI();
-						userEmailId.setText(user.getEmail());
+						//userEmailId.setText(user.getEmail());
 						if (!task.isSuccessful()) {
 							Log.w("Sign in", "signInWithCredential", task.getException());
 							Toast.makeText(MainActivity.this, "Authentication failed. Please Check your Internet Connection and Open the app again...",
@@ -294,13 +302,13 @@ public class MainActivity extends AppCompatActivity
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		dialog.dismiss();
+		//dialog.dismiss();
 	}
 
 	void initUI() {
-		dialog = new ProgressDialog(this);
-		dialog.setMessage("Loading Database");
-		dialog.show();
+		//dialog = new ProgressDialog(this);
+		//dialog.setMessage("Loading Database");
+		//dialog.show();
 		data = FirebaseDatabase.getInstance().getReference();
 		data.child("AR Rahman").child("Tamil").addValueEventListener(new ValueEventListener() {
 			@Override
@@ -319,7 +327,7 @@ public class MainActivity extends AppCompatActivity
 
 				TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
 				tabLayout.setupWithViewPager(mViewPager);
-				dialog.hide();
+				//dialog.hide();
 
 			}
 
@@ -328,13 +336,14 @@ public class MainActivity extends AppCompatActivity
 
 			}
 		});
-		NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+		/**NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
 		navigationView.setNavigationItemSelectedListener(this);
 		View view = navigationView.getHeaderView(0);
 		userEmailId = (TextView) view.findViewById(R.id.email);
 		userEmailId.setText(user.getEmail());
 
 		Typeface english = Typeface.createFromAsset(getResources().getAssets(), "english.ttf");
-		userEmailId.setTypeface(english);
+		userEmailId.setTypeface(english);**/
+
 	}
 }

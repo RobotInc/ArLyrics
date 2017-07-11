@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.AdListener;
+
 import com.bss.arrahmanlyrics.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,10 +41,12 @@ public class EnglishLyrics extends Fragment {
     DatabaseReference songRef;
     HashMap<String, Object> selectedSong;
     public TextView lyricsText;
-    TextView song_title,album_title;
+    public TextView lyricsText2;
+    TextView song_title, album_title;
     DatabaseReference ref;
+    private AdView mAdView;
 
-    HashMap<String,Object> manualSong;
+    HashMap<String, Object> manualSong;
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
@@ -77,21 +83,63 @@ public class EnglishLyrics extends Fragment {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_english_lyrics,container,false);
-        lyricsText = (TextView) view.findViewById(R.id.lyricsEnglish) ;
+        View view = inflater.inflate(R.layout.fragment_english_lyrics, container, false);
+        lyricsText = (TextView) view.findViewById(R.id.lyricsEnglish);
+        lyricsText2 = (TextView) view.findViewById(R.id.lyricsEnglish2);
         song_title = (TextView) getActivity().findViewById(R.id.song_title);
         album_title = (TextView) getActivity().findViewById(R.id.album_title);
         song_title.setText(getActivity().getIntent().getExtras().getString("selectedSong"));
         album_title.setText(getActivity().getIntent().getExtras().getString("Title"));
 
+        mAdView = (AdView) view.findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder()
+                .build();
+        mAdView.loadAd(adRequest);
+        mAdView.setAdListener(new AdListener() {
+            @Override
+            public void onAdLoaded() {
+                // Code to be executed when an ad finishes loading.
+                Log.i("Ads", "onAdLoaded");
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                // Code to be executed when an ad request fails.
+                Log.i("Ads", "onAdFailedToLoad");
+            }
+
+            @Override
+            public void onAdOpened() {
+                // Code to be executed when an ad opens an overlay that
+                // covers the screen.
+                Log.i("Ads", "onAdOpened");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                // Code to be executed when the user has left the app.
+                Log.i("Ads", "onAdLeftApplication");
+            }
+
+            @Override
+            public void onAdClosed() {
+                // Code to be executed when when the user is about to return
+                // to the app after tapping on an ad.
+                Log.i("Ads", "onAdClosed");
+            }
+        });
         return view;
     }
+
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {

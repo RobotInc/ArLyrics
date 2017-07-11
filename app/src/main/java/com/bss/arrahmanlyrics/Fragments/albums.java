@@ -1,6 +1,7 @@
 package com.bss.arrahmanlyrics.Fragments;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -18,11 +20,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.activites.MainActivity;
+import com.bss.arrahmanlyrics.activites.feedback;
 import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.albumAdapter;
 import com.bss.arrahmanlyrics.models.Album;
@@ -40,6 +44,8 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static android.R.attr.id;
 
 
 /**
@@ -258,6 +264,8 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 		return true;
 	}
 
+
+
 	/**
 	 * This interface must be implemented by activities that contain this
 	 * fragment to allow an interaction in this fragment to be communicated
@@ -281,7 +289,7 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 		searchView.setOnQueryTextListener(this);
 		searchView.setQueryHint("Search album");
 
-	}
+		}
 
 	private byte[] getImage(String imageString) {
 		if (imageString.equals(null)) {
@@ -347,4 +355,24 @@ public class albums extends Fragment implements SearchView.OnQueryTextListener {
 		}
 		return filteralbumlist;
 	}
+
+@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+	switch (item.getItemId()) {
+		case R.id.feedback:
+			Intent intent = new Intent(getContext(), feedback.class);
+			startActivity(intent);
+			return true;
+		case R.id.about:
+			AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+		    builder.setTitle(R.string.title);
+			builder.setMessage(R.string.description);
+			builder.setPositiveButton(R.string.ok, null);
+			builder.show();
+			return true;
+		default:
+		return super.onOptionsItemSelected(item);
+	}
+}
+
 }

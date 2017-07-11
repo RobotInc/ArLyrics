@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -17,12 +18,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bss.arrahmanlyrics.R;
 import com.bss.arrahmanlyrics.activites.MainActivity;
+import com.bss.arrahmanlyrics.activites.feedback;
 import com.bss.arrahmanlyrics.activites.lyricsActivity;
 import com.bss.arrahmanlyrics.adapter.fragmentSongAdapter;
 import com.bss.arrahmanlyrics.adapter.mainFragmentSongAdapter;
@@ -310,6 +313,25 @@ public class songs extends Fragment implements SearchView.OnQueryTextListener {
 		searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.song_search));
 		searchView.setOnQueryTextListener(this);
 		searchView.setQueryHint("Search songs");
+
+	}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+			case R.id.feedback:
+				Intent intent = new Intent(getContext(), feedback.class);
+				startActivity(intent);
+				return true;
+			case R.id.about:
+				AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+				builder.setTitle(R.string.title);
+				builder.setMessage(R.string.description);
+				builder.setPositiveButton(R.string.ok, null);
+				builder.show();
+				return true;
+			default:
+				return super.onOptionsItemSelected(item);
+		}
 
 	}
 }
