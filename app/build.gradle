@@ -49,5 +49,6 @@ dependencies {
     compile 'hanks.xyz:smallbang-library:0.1.2'
     compile 'com.google.android.gms:play-services-ads:11.0.1'
     testCompile 'junit:junit:4.12'
+
 }
 apply plugin: 'com.google.gms.google-services'

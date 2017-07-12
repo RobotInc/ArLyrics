@@ -1,10 +1,13 @@
 package com.bss.arrahmanlyrics.activites;
 
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -18,6 +21,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -35,6 +39,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -80,6 +85,7 @@ public class MainActivity extends AppCompatActivity
 	ProgressDialog dialog;
 	public FirebaseUser user;
 	HashMap<String, Object> movies;
+	private InterstitialAd mInterstitialAd;
 
 
 	@Override
@@ -131,7 +137,42 @@ public class MainActivity extends AppCompatActivity
 			signIn();
 		}
 		MobileAds.initialize(getApplicationContext(),
-				"ca-app-pub-3940256099942544~3347511713");
+				"ca-app-pub-2287984365462163~8036573131");
+
+		mInterstitialAd = new InterstitialAd(this);
+		mInterstitialAd.setAdUnitId("ca-app-pub-2287984365462163/1279872339");
+		mInterstitialAd.loadAd(new AdRequest.Builder().build());
+		mInterstitialAd.setAdListener(new AdListener() {
+			@Override
+			public void onAdLoaded() {
+				// Code to be executed when an ad finishes loading.
+				Log.i("Ads", "onAdLoaded");
+			}
+
+			@Override
+			public void onAdFailedToLoad(int errorCode) {
+				// Code to be executed when an ad request fails.
+				Log.i("Ads", "onAdFailedToLoad");
+			}
+
+			@Override
+			public void onAdOpened() {
+				// Code to be executed when the ad is displayed.
+				Log.i("Ads", "onAdOpened");
+			}
+
+			@Override
+			public void onAdLeftApplication() {
+				// Code to be executed when the user has left the app.
+				Log.i("Ads", "onAdLeftApplication");
+			}
+
+			@Override
+			public void onAdClosed() {
+				// Code to be executed when when the interstitial ad is closed.
+				Log.i("Ads", "onAdClosed");
+			}
+		});
 	}
 
 
@@ -144,7 +185,43 @@ public class MainActivity extends AppCompatActivity
 		} else {
 			super.onBackPressed();
 		}*/
-	}
+		AlertDialog.Builder builder;
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
+				builder = new AlertDialog.Builder(MainActivity.this);
+			}
+			else
+			{
+				builder = new AlertDialog.Builder(MainActivity.this, AlertDialog.BUTTON_NEUTRAL);
+			}
+			builder.setTitle("Thank You");
+			builder.setMessage("Thank You For Using Our Application Please Give Us Your Suggestions and Feedback ");
+			builder.setNegativeButton("RATE US",
+					new DialogInterface.OnClickListener()
+					{
+						public void onClick(DialogInterface dialog,
+											int which)
+						{
+							Intent intent = new Intent(Intent.ACTION_VIEW);
+							intent.setData(Uri.parse("https://play.google.com/store/apps/details?id=ADD YOUR APPS PACKAGE NAME")); // Add package name of your application
+							startActivity(intent);
+							Toast.makeText(MainActivity.this, "Thank you for your Rating",
+									Toast.LENGTH_SHORT).show();
+						}
+					});
+			builder.setPositiveButton("QUIT",
+					new DialogInterface.OnClickListener()
+					{
+						public void onClick(DialogInterface dialog,
+											int which)
+						{
+							finish();
+						}
+					});
+
+			builder.show();
+		}
+
+
 
 
 	@SuppressWarnings("StatementWithEmptyBody")
@@ -317,7 +394,28 @@ public class MainActivity extends AppCompatActivity
 				mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 				mViewPager = (ViewPager) findViewById(R.id.container);
 				mViewPager.setOffscreenPageLimit(2);
+mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+	@Override
+	public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+		if (position==2) {
+			if (mInterstitialAd.isLoaded()) {
+				mInterstitialAd.show();
+			} else {
+				Log.d("TAG", "The interstitial wasn't loaded yet.");
+			}
+		}
+	}
 
+	@Override
+	public void onPageSelected(int position) {
+
+	}
+
+	@Override
+	public void onPageScrollStateChanged(int state) {
+
+	}
+});
 				mSectionsPagerAdapter.addFragment(new albums(), "Albums");
 				mSectionsPagerAdapter.addFragment(new songs(), "Songs");
 				mSectionsPagerAdapter.addFragment(new favorites(), "Favorite Songs");
@@ -346,4 +444,5 @@ public class MainActivity extends AppCompatActivity
 		userEmailId.setTypeface(english);**/
 
 	}
+
 }
